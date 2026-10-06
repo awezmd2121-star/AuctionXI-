@@ -166,6 +166,7 @@ function adminListeners(){
 onValue(ref(db,"tournaments/main/players"),s=>{
   renderAuctionPool(s.exists()?s.val():null);
 });
+}
 document.addEventListener("click",async e=>{
   const b=e.target.closest("[data-player-action]");
   if(!b)return;

@@ -96,6 +96,48 @@ function renderPlayers(data){
     </div>
   `).join("");
 }
+function renderAuctionPool(data){
+  const el=$("auctionPool");
+  if(!el)return;
+
+  if(!data){
+    el.innerHTML="<p class='note'>No players in the auction pool.</p>";
+    return;
+  }
+
+  const players=Object.entries(data)
+    .filter(([id,p])=>p.status==="auction_pool");
+
+  if(!players.length){
+    el.innerHTML="<p class='note'>No players in the auction pool.</p>";
+    return;
+  }
+
+  el.innerHTML=players.map(([id,p])=>`
+    <div class="box" style="margin-bottom:12px">
+      <div style="display:flex;gap:12px;align-items:center">
+        <img src="${p.photo||""}" alt="Player photo"
+             style="width:80px;height:80px;object-fit:cover;border-radius:10px">
+
+        <div>
+          <b>${p.name||"Unnamed player"}</b><br>
+          <small>${p.playerId||""} · ${p.city||""}</small><br>
+          <small>CricHeroes: ${p.cricheroes||"—"}</small><br>
+          <small>Status: <b>In Auction Pool</b></small>
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <button type="button"
+                class="primary"
+                data-auction-action="start"
+                data-player-id="${id}">
+          Start Auction
+        </button>
+      </div>
+    </div>
+  `).join("");
+}
 function adminListeners(){
   onValue(ref(db,"tournaments/main/settings"),s=>{
     if(s.exists())settings={...settings,...s.val()};
@@ -121,7 +163,9 @@ function adminListeners(){
   onValue(ref(db,"tournaments/main/players"),s=>{
     renderPlayers(s.exists()?s.val():null);
   });
-}
+onValue(ref(db,"tournaments/main/players"),s=>{
+  renderAuctionPool(s.exists()?s.val():null);
+});
 document.addEventListener("click",async e=>{
   const b=e.target.closest("[data-player-action]");
   if(!b)return;

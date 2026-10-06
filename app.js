@@ -8,6 +8,52 @@ const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app);
 const $=id=>document.getElementById(id), show=(id,v)=>$(id).classList.toggle("hidden",!v);
 let settings={tournamentName:"AuctionXI Tournament",totalPoints:1200,playersRequired:8,minBid:30};
 
+async function addPlayer(e){
+  e?.preventDefault();
+
+  const name=$("pName")?.value.trim();
+  const city=$("pCity")?.value.trim();
+  const cricheroes=$("pCric")?.value.trim();
+  const previous=$("pPrevious")?.value.trim();
+  const file=$("pPhoto")?.files?.[0];
+
+  if(!name||!city||!cricheroes||!file){
+    return msg("playerMsg","Please fill all required fields and select a photo.");
+  }
+
+  try{
+    msg("playerMsg","Registering player...");
+
+    const photo=await compress(file);
+    const id=push(ref(db,"tournaments/main/players")).key;
+
+    const playerId=nextPlayerId();
+
+    await set(ref(db,"tournaments/main/players/"+id),{
+      playerId,
+      name,
+      city,
+      cricheroes,
+      previous,
+      photo,
+      status:"pending",
+      selected:false,
+      createdAt:Date.now()
+    });
+
+    $("pName").value="";
+    $("pCity").value="";
+    $("pCric").value="";
+    $("pPrevious").value="";
+    $("pPhoto").value="";
+    $("photoPreview").innerHTML="";
+
+    msg("playerMsg",`Player registered successfully — ${playerId}`);
+  }catch(e){
+    console.error(e);
+    msg("playerMsg","Could not register player: "+e.message);
+  }
+}
 function maxBid(remaining,bought){const need=Math.max(0,settings.playersRequired-(bought+1));return bought===0?Math.max(0,settings.totalPoints-settings.playersRequired*settings.minBid):Math.max(0,remaining-need*settings.minBid)}
 function renderSettings(){ $("tName").value=settings.tournamentName||"";$("points").value=settings.totalPoints;$("required").value=settings.playersRequired;$("minBid").value=settings.minBid;$("startMax").textContent=Math.max(0,settings.totalPoints-settings.playersRequired*settings.minBid);$("sName").textContent=settings.tournamentName||"—";$("sPoints").textContent=settings.totalPoints;$("sReq").textContent=settings.playersRequired}
 function adminListeners(){onValue(ref(db,"tournaments/main/settings"),s=>{if(s.exists())settings={...settings,...s.val()};renderSettings()});onValue(ref(db,"tournaments/main/teams"),s=>{const el=$("teams");el.innerHTML="";if(!s.exists()){el.innerHTML="<p class='note'>No teams yet.</p>";return}Object.values(s.val()).forEach(t=>{const d=document.createElement("div");d.innerHTML="<b>"+(t.name||"Unnamed team")+"</b><br><small>"+(t.email||"")+"</small>";el.appendChild(d)})})}

@@ -62,18 +62,36 @@ function renderPlayers(data){
         </div>
       </div>
 
-      <div style="margin-top:10px;display:flex;gap:8px">
-        ${p.status!=="approved"
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+
+        ${p.status==="pending"
           ? `<button type="button" class="primary"
                data-player-action="approve" data-player-id="${id}">
                Approve
-             </button>` : ""}
+             </button>`
+          : ""}
 
-        ${p.status!=="rejected"
+        ${p.status==="pending"||p.status==="approved"
           ? `<button type="button" class="secondary"
                data-player-action="reject" data-player-id="${id}">
                Reject
-             </button>` : ""}
+             </button>`
+          : ""}
+
+        ${p.status==="approved"
+          ? `<button type="button" class="primary"
+               data-player-action="auction" data-player-id="${id}">
+               Add to Auction
+             </button>`
+          : ""}
+
+        ${p.status==="auction_pool"
+          ? `<button type="button" class="secondary"
+               disabled>
+               In Auction Pool
+             </button>`
+          : ""}
+
       </div>
     </div>
   `).join("");
@@ -114,7 +132,14 @@ document.addEventListener("click",async e=>{
   try{
     await update(
       ref(db,"tournaments/main/players/"+id),
-      {status:action==="approve"?"approved":"rejected"}
+      {
+  status:
+    action==="approve"
+      ? "approved"
+      : action==="auction"
+        ? "auction_pool"
+        : "rejected"
+}
     );
   }catch(err){
     console.error(err);

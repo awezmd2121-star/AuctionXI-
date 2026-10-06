@@ -12,6 +12,12 @@
           ".read": "auth != null",
           ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
         },
+        "players": {
+          ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+          "$playerId": {
+            ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+          }
+        },
         "teams": {
           ".read": "auth != null",
           "$teamId": {

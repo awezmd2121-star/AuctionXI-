@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080c18"><title>AuctionXI</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="top"><div><b>AUCTION<span>XI</span></b><small>Digital Cricket Auction</small></div><button id="logout" class="ghost hidden">Logout</button></header>
+<main>
+<section id="login" class="card login"><h1>Welcome to AuctionXI</h1><p>Sign in with your assigned account.</p>
+<label>Email</label><input id="email" type="email" autocomplete="username">
+<label>Password</label><input id="password" type="password" autocomplete="current-password">
+<button id="loginBtn" class="primary">Sign in</button><p id="loginMsg"></p></section>
+
+<section id="admin" class="hidden">
+<div class="card hero"><small>ADMIN CONTROL</small><h1>Tournament Setup</h1><p>V1 foundation for the new AuctionXI platform.</p></div>
+<div class="grid two">
+<section class="card"><h2>Tournament settings</h2>
+<label>Tournament name</label><input id="tName" placeholder="City Chowk Premier League">
+<div class="grid two"><div><label>Total points</label><input id="points" type="number" value="1200"></div><div><label>Players per team</label><input id="required" type="number" value="8"></div></div>
+<div class="grid two"><div><label>Minimum bid</label><input id="minBid" type="number" value="30"></div><div><label>Starting max bid</label><div id="startMax" class="box">960</div></div></div>
+<button id="save" class="primary">Save settings</button><p id="saveMsg"></p></section>
+<section class="card"><h2>Teams</h2><input id="teamName" placeholder="Team name"><input id="teamEmail" type="email" placeholder="Team login email">
+<p class="note">Team accounts will be linked securely in the next step. Do not put service-account credentials in the website.</p><div id="teams"></div></section>
+</div>
+<section class="card"><h2>V1 status</h2><div class="grid three"><div class="stat"><small>Tournament</small><b id="sName">—</b></div><div class="stat"><small>Points</small><b id="sPoints">—</b></div><div class="stat"><small>Players/team</small><b id="sReq">—</b></div></div></section>
+</section>
+
+<section id="team" class="hidden">
+<div class="card hero"><small>TEAM DASHBOARD</small><h1 id="teamNameOut">Team</h1><p id="teamTournament">AuctionXI</p></div>
+<div class="grid three"><div class="stat card"><small>Remaining points</small><b id="remaining">—</b></div><div class="stat card"><small>Players</small><b id="bought">0 / 8</b></div><div class="stat card"><small>Maximum legal bid</small><b id="maxBid">—</b></div></div>
+<section class="card"><h2>Reserve</h2><p>Points reserved for players still required at minimum bid.</p><div id="reserve" class="big">—</div></section>
+</section>
+</main>
+<script type="module" src="app.js"></script></body></html>

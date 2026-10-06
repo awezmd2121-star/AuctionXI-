@@ -1,0 +1,24 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    },
+    "tournaments": {
+      "main": {
+        "settings": {
+          ".read": "auth != null",
+          ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        },
+        "teams": {
+          ".read": "auth != null",
+          "$teamId": {
+            ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+          }
+        }
+      }
+    }
+  }
+}

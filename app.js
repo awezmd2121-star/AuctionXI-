@@ -37,7 +37,90 @@ async function compressPhoto(file){
 }
 function maxBid(remaining,bought){const need=Math.max(0,settings.playersRequired-(bought+1));return bought===0?Math.max(0,settings.totalPoints-settings.playersRequired*settings.minBid):Math.max(0,remaining-need*settings.minBid)}
 function renderSettings(){ $("tName").value=settings.tournamentName||"";$("points").value=settings.totalPoints;$("required").value=settings.playersRequired;$("minBid").value=settings.minBid;$("startMax").textContent=Math.max(0,settings.totalPoints-settings.playersRequired*settings.minBid);$("sName").textContent=settings.tournamentName||"—";$("sPoints").textContent=settings.totalPoints;$("sReq").textContent=settings.playersRequired}
-function adminListeners(){onValue(ref(db,"tournaments/main/settings"),s=>{if(s.exists())settings={...settings,...s.val()};renderSettings()});onValue(ref(db,"tournaments/main/teams"),s=>{const el=$("teams");el.innerHTML="";if(!s.exists()){el.innerHTML="<p class='note'>No teams yet.</p>";return}Object.values(s.val()).forEach(t=>{const d=document.createElement("div");d.innerHTML="<b>"+(t.name||"Unnamed team")+"</b><br><small>"+(t.email||"")+"</small>";el.appendChild(d)})})}
+function renderPlayers(data){
+  const el=$("playerList");
+  if(!el)return;
+
+  if(!data){
+    el.innerHTML="<p class='note'>No players registered yet.</p>";
+    return;
+  }
+
+  const players=Object.entries(data);
+
+  el.innerHTML=players.map(([id,p])=>`
+    <div class="box" style="margin-bottom:12px">
+      <div style="display:flex;gap:12px;align-items:center">
+        <img src="${p.photo||""}" alt="Player photo"
+             style="width:70px;height:70px;object-fit:cover;border-radius:10px">
+
+        <div>
+          <b>${p.name||"Unnamed player"}</b><br>
+          <small>${p.playerId||""} · ${p.city||""}</small><br>
+          <small>CricHeroes: ${p.cricheroes||"—"}</small><br>
+          <small>Status: <b>${p.status||"pending"}</b></small>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;display:flex;gap:8px">
+        ${p.status!=="approved"
+          ? `<button type="button" class="primary"
+               data-player-action="approve" data-player-id="${id}">
+               Approve
+             </button>` : ""}
+
+        ${p.status!=="rejected"
+          ? `<button type="button" class="secondary"
+               data-player-action="reject" data-player-id="${id}">
+               Reject
+             </button>` : ""}
+      </div>
+    </div>
+  `).join("");
+}
+function adminListeners(){
+  onValue(ref(db,"tournaments/main/settings"),s=>{
+    if(s.exists())settings={...settings,...s.val()};
+    renderSettings();
+  });
+
+  onValue(ref(db,"tournaments/main/teams"),s=>{
+    const el=$("teams");
+    el.innerHTML="";
+
+    if(!s.exists()){
+      el.innerHTML="<p class='note'>No teams yet.</p>";
+      return;
+    }
+
+    Object.values(s.val()).forEach(t=>{
+      const d=document.createElement("div");
+      d.innerHTML="<b>"+(t.name||"Unnamed team")+"</b><br><small>"+(t.email||"")+"</small>";
+      el.appendChild(d);
+    });
+  });
+
+  onValue(ref(db,"tournaments/main/players"),s=>{
+    renderPlayers(s.exists()?s.val():null);
+  });
+}
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-player-action]");
+  if(!b)return;
+
+  const id=b.dataset.playerId;
+  const action=b.dataset.playerAction;
+
+  try{
+    await update(
+      ref(db,"tournaments/main/players/"+id),
+      {status:action==="approve"?"approved":"rejected"}
+    );
+  }catch(err){
+    console.error(err);
+    alert("Could not update player: "+err.message);
+  }
+});
 $("loginBtn").onclick=async()=>{try{await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value)}catch(e){$("loginMsg").textContent=e.message}};
 async function addPlayer(e){
   e?.preventDefault();

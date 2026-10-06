@@ -1,7 +1,6 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import{getDatabase,ref,get,set,push,onValue}from"https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
-
+import{getDatabase,ref,get,set,push,onValue,update}from"https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 /* Replace only this config with the config from your NEW AuctionXI Firebase Web App. */
 const firebaseConfig={apiKey:"AIzaSyCL556A_syoypvLv8w6S951LdnMsuqAxUc",authDomain:"auctionxi-7f389.firebaseapp.com",databaseURL:"https://auctionxi-7f389-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"auctionxi-7f389",storageBucket:"auctionxi-7f389.firebasestorage.app",messagingSenderId:"173927110591",appId:"1:173927110591:web:c26f96c9516e1a9296730a",measurementId:"G-SG22FQD9TF"};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app);

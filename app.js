@@ -358,6 +358,113 @@ function renderAuctionPool(data){
     </div>
 
   `).join("");
+  /* =========================
+   LIVE AUCTION
+========================= */
+
+function renderLiveAuction(data){
+
+  const el=$("liveAuction");
+
+  if(!el)return;
+
+  if(!data || data.state!=="live"){
+
+    el.innerHTML=
+      "<p class='note'>No player is currently live.</p>";
+
+    return;
+  }
+
+  el.innerHTML=`
+
+    <div
+      class="box"
+      style="margin-bottom:12px"
+    >
+
+      <div
+        style="display:flex;gap:14px;align-items:center"
+      >
+
+        <img
+          src="${data.photo||""}"
+          alt="Player photo"
+          style="
+            width:100px;
+            height:100px;
+            object-fit:cover;
+            border-radius:12px;
+          "
+        >
+
+        <div>
+
+          <h3 style="margin:0 0 6px">
+            ${data.name||"Player"}
+          </h3>
+
+          <small>
+            ${data.playerId||""} · ${data.city||""}
+          </small>
+
+          <br>
+
+          <small>
+            CricHeroes: ${data.cricheroes||"—"}
+          </small>
+
+        </div>
+
+      </div>
+
+      <div style="margin-top:18px">
+
+        <p>
+          Current Bid:
+          <b>${data.currentBid||0} points</b>
+        </p>
+
+        <p>
+          Highest Team:
+          <b>
+            ${data.highestTeamName||"No bids yet"}
+          </b>
+        </p>
+
+      </div>
+
+      <div
+        style="
+          margin-top:16px;
+          display:flex;
+          gap:10px;
+          flex-wrap:wrap;
+        "
+      >
+
+        <button
+          type="button"
+          class="primary"
+          data-live-action="sold"
+        >
+          SOLD
+        </button>
+
+        <button
+          type="button"
+          class="secondary"
+          data-live-action="unsold"
+        >
+          UNSOLD
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+}
 }
 
 
@@ -441,7 +548,16 @@ function adminListeners(){
       );
     }
   );
+  /* Live Auction */
 
+  onValue(
+    ref(db,"tournaments/main/auction/current"),
+    s=>{
+      renderLiveAuction(
+        s.exists()?s.val():null
+      );
+    }
+  );
 }
 
 

@@ -358,6 +358,7 @@ function renderAuctionPool(data){
     </div>
 
   `).join("");
+}
   /* =========================
    LIVE AUCTION
 ========================= */
@@ -465,7 +466,7 @@ function renderLiveAuction(data){
 
   `;
 }
-}
+
 
 
 /* =========================
@@ -548,7 +549,7 @@ function adminListeners(){
       );
     }
   );
-  /* Live Auction */
+    /* Live Auction */
 
   onValue(
     ref(db,"tournaments/main/auction/current"),

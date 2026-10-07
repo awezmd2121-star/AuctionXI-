@@ -779,6 +779,20 @@ document.addEventListener(
 
 }
 
+  }catch(err){
+
+    console.error(err);
+
+    alert(
+      "Auction action failed: "+
+      err.message
+    );
+
+  }
+
+);
+
+
 /* =========================
    START AUCTION
 ========================= */

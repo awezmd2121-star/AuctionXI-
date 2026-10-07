@@ -904,24 +904,68 @@ document.addEventListener(
    LOGIN
 ========================= */
 
-$("loginBtn").onclick=async()=>{
+async function login(){
+
+  const email=$("email")?.value.trim()||"";
+  const password=$("password")?.value||"";
+  const msg=$("loginMsg");
+  const btn=$("loginBtn");
+
+  if(!email || !password){
+
+    if(msg){
+      msg.textContent="Please enter both email and password.";
+    }
+
+    return;
+  }
+
+  if(btn){
+    btn.disabled=true;
+    btn.textContent="Signing in...";
+  }
 
   try{
 
     await signInWithEmailAndPassword(
       auth,
-      $("email").value.trim(),
-      $("password").value
+      email,
+      password
     );
 
-  }catch(e){
+  }catch(error){
 
-    $("loginMsg").textContent=
-      e.message;
+    console.error("AuctionXI login error:",error);
+
+    if(msg){
+      msg.textContent=
+        error.message||"Login failed.";
+    }
+
+  }finally{
+
+    if(btn){
+      btn.disabled=false;
+      btn.textContent="Sign in";
+    }
 
   }
 
-};
+}
+
+$("loginBtn")?.addEventListener(
+  "click",
+  login
+);
+
+$("password")?.addEventListener(
+  "keydown",
+  e=>{
+    if(e.key==="Enter"){
+      login();
+    }
+  }
+);
 
 
 /* =========================

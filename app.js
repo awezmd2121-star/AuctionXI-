@@ -609,6 +609,104 @@ document.addEventListener(
 
   }
 );
+/* =========================
+   LIVE AUCTION ACTIONS
+========================= */
+
+document.addEventListener(
+  "click",
+  async e=>{
+
+    const b=e.target.closest(
+      "[data-live-action]"
+    );
+
+    if(!b)return;
+
+    const action=b.dataset.liveAction;
+
+    try{
+
+      const snap=await get(
+        ref(
+          db,
+          "tournaments/main/auction/current"
+        )
+      );
+
+      if(!snap.exists())return;
+
+      const auction=snap.val();
+
+      if(!auction.playerId){
+        alert("No player is currently live.");
+        return;
+      }
+
+      if(action==="unsold"){
+
+        await update(
+          ref(
+            db,
+            "tournaments/main/players/"+auction.databaseId
+          ),
+          {
+            status:"unsold"
+          }
+        );
+
+        await update(
+          ref(
+            db,
+            "tournaments/main/auction/current"
+          ),
+          {
+            state:"unsold"
+          }
+        );
+
+        return;
+      }
+
+      if(action==="sold"){
+
+        if(!auction.highestTeamId){
+
+          alert("There is no winning team.");
+          return;
+
+        }
+
+        if(!auction.currentBid || auction.currentBid<=0){
+
+          alert("There is no bid for this player.");
+          return;
+
+        }
+
+        alert(
+          "SOLD to "+
+          (auction.highestTeamName||"winning team")+
+          " for "+
+          auction.currentBid+
+          " points."
+        );
+
+      }
+
+    }catch(err){
+
+      console.error(err);
+
+      alert(
+        "Auction action failed: "+
+        err.message
+      );
+
+    }
+
+  }
+);
 
 
 /* =========================

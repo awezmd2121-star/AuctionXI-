@@ -670,44 +670,114 @@ document.addEventListener(
 
       if(action==="sold"){
 
-        if(!auction.highestTeamId){
+  if(!auction.highestTeamId){
 
-          alert("There is no winning team.");
-          return;
-
-        }
-
-        if(!auction.currentBid || auction.currentBid<=0){
-
-          alert("There is no bid for this player.");
-          return;
-
-        }
-
-        alert(
-          "SOLD to "+
-          (auction.highestTeamName||"winning team")+
-          " for "+
-          auction.currentBid+
-          " points."
-        );
-
-      }
-
-    }catch(err){
-
-      console.error(err);
-
-      alert(
-        "Auction action failed: "+
-        err.message
-      );
-
-    }
+    alert("There is no winning team.");
+    return;
 
   }
-);
 
+  if(!auction.currentBid || auction.currentBid<=0){
+
+    alert("There is no bid for this player.");
+    return;
+
+  }
+
+  const teamRef=ref(
+    db,
+    "tournaments/main/teams/"+auction.highestTeamId
+  );
+
+  const teamSnap=await get(teamRef);
+
+  if(!teamSnap.exists()){
+
+    alert("Winning team was not found.");
+    return;
+
+  }
+
+  const team=teamSnap.val();
+
+  const remaining=Number(team.remaining||0);
+  const bought=Number(team.bought||0);
+  const bid=Number(auction.currentBid||0);
+
+  if(bid>remaining){
+
+    alert("Winning team does not have enough points.");
+    return;
+
+  }
+
+  const newRemaining=remaining-bid;
+  const newBought=bought+1;
+
+  const playerRef=ref(
+    db,
+    "tournaments/main/players/"+auction.databaseId
+  );
+
+  const squadPlayer={
+    playerId:auction.playerId,
+    name:auction.name||"Player",
+    city:auction.city||"",
+    cricheroes:auction.cricheroes||"",
+    previous:auction.previous||"",
+    photo:auction.photo||"",
+    soldFor:bid,
+    status:"sold"
+  };
+
+  const updates={};
+
+  updates[
+    "tournaments/main/players/"+auction.databaseId+"/status"
+  ]="sold";
+
+  updates[
+    "tournaments/main/players/"+auction.databaseId+"/soldTo"
+  ]=auction.highestTeamId;
+
+  updates[
+    "tournaments/main/players/"+auction.databaseId+"/soldFor"
+  ]=bid;
+
+  updates[
+    "tournaments/main/teams/"+auction.highestTeamId+"/remaining"
+  ]=newRemaining;
+
+  updates[
+    "tournaments/main/teams/"+auction.highestTeamId+"/bought"
+  ]=newBought;
+
+  const squadKey=push(
+    ref(
+      db,
+      "tournaments/main/teams/"+auction.highestTeamId+"/players"
+    )
+  ).key;
+
+  updates[
+    "tournaments/main/teams/"+auction.highestTeamId+"/players/"+squadKey
+  ]=squadPlayer;
+
+  updates[
+    "tournaments/main/auction/current/state"
+  ]="sold";
+
+  await update(ref(db),updates);
+
+  alert(
+    "SOLD to "+
+    (auction.highestTeamName||team.name||"winning team")+
+    " for "+
+    bid+
+    " points."
+  );
+
+}
 
 /* =========================
    START AUCTION

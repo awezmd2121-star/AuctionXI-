@@ -92,4 +92,9 @@
 </section>
 </main>
 <script>alert("INDEX HTML IS WORKING");</script>
-<script type="module" src="app.js"></script>
+<script>
+  import("./app.js").catch(error => {
+    alert("APP.JS ERROR: " + error.message);
+    console.error(error);
+  });
+</script>

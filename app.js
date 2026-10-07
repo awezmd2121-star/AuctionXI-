@@ -30,6 +30,7 @@ let settings={
   minBid:30
 };
 
+let liveAuctionTeams={};
 
 /* =========================
    PHOTO COMPRESSION
@@ -379,6 +380,25 @@ function renderLiveAuction(data){
     return;
   }
 
+  const teams=Object.entries(liveAuctionTeams||{});
+
+  const teamOptions=teams.length
+    ? teams.map(([id,t])=>{
+
+        const remaining=Number(t.remaining||0);
+        const bought=Number(t.bought||0);
+        const legalMax=maxBid(remaining,bought);
+
+        return `
+          <option value="${id}">
+            ${t.name||"Unnamed Team"} — Max ${legalMax}
+          </option>
+        `;
+
+      }).join("")
+    : `<option value="">No teams available</option>`;
+
+
   el.innerHTML=`
 
     <div
@@ -421,6 +441,7 @@ function renderLiveAuction(data){
 
       </div>
 
+
       <div style="margin-top:18px">
 
         <p>
@@ -436,6 +457,72 @@ function renderLiveAuction(data){
         </p>
 
       </div>
+
+
+      <!-- ADMIN BIDDING -->
+
+      <div
+        class="box"
+        style="margin-top:16px"
+      >
+
+        <h3 style="margin-top:0">
+          Admin Bidding
+        </h3>
+
+        <label>
+          Team
+        </label>
+
+        <select
+          id="liveBidTeam"
+          style="width:100%;padding:10px;margin-top:6px"
+        >
+
+          <option value="">
+            Select team
+          </option>
+
+          ${teamOptions}
+
+        </select>
+
+
+        <label
+          style="display:block;margin-top:12px"
+        >
+          Bid Amount
+        </label>
+
+        <input
+          id="liveBidAmount"
+          type="number"
+          min="${settings.minBid}"
+          step="${settings.minBid}"
+          placeholder="Enter bid"
+          style="width:100%;padding:10px;margin-top:6px"
+        >
+
+
+        <button
+          type="button"
+          class="primary"
+          data-live-action="bid"
+          style="margin-top:12px"
+        >
+          Place Bid
+        </button>
+
+        <p
+          id="liveBidMsg"
+          class="note"
+          style="margin-top:8px"
+        ></p>
+
+      </div>
+
+
+      <!-- SOLD / UNSOLD -->
 
       <div
         style="
@@ -500,6 +587,32 @@ function adminListeners(){
 
       const el=$("teams");
 
+      liveAuctionTeams=
+  s.exists()
+    ? s.val()
+    : {};
+
+      const currentAuctionEl=$("liveAuction");
+
+if(currentAuctionEl){
+
+  get(
+    ref(
+      db,
+      "tournaments/main/auction/current"
+    )
+  ).then(currentSnap=>{
+
+    renderLiveAuction(
+      currentSnap.exists()
+        ? currentSnap.val()
+        : null
+    );
+
+  });
+
+}
+      
       el.innerHTML="";
 
       if(!s.exists()){
@@ -640,6 +753,155 @@ document.addEventListener(
         return;
       }
 
+      if(action==="bid"){
+
+  const teamId=
+    $("liveBidTeam")?.value||"";
+
+  const bid=
+    Number(
+      $("liveBidAmount")?.value||0
+    );
+
+  const msg=
+    $("liveBidMsg");
+
+
+  if(!teamId){
+
+    if(msg){
+      msg.textContent=
+        "Please select a team.";
+    }
+
+    return;
+  }
+
+
+  if(!Number.isFinite(bid)||bid<=0){
+
+    if(msg){
+      msg.textContent=
+        "Enter a valid bid amount.";
+    }
+
+    return;
+  }
+
+
+  if(bid<Number(settings.minBid)){
+
+    if(msg){
+      msg.textContent=
+        "Minimum bid is "+
+        settings.minBid+
+        " points.";
+    }
+
+    return;
+  }
+
+
+  const currentBid=
+    Number(auction.currentBid||0);
+
+
+  if(bid<=currentBid){
+
+    if(msg){
+      msg.textContent=
+        "Bid must be higher than the current bid of "+
+        currentBid+
+        " points.";
+    }
+
+    return;
+  }
+
+
+  const teamSnap=
+    await get(
+      ref(
+        db,
+        "tournaments/main/teams/"+teamId
+      )
+    );
+
+
+  if(!teamSnap.exists()){
+
+    if(msg){
+      msg.textContent=
+        "Selected team was not found.";
+    }
+
+    return;
+  }
+
+
+  const team=
+    teamSnap.val();
+
+
+  const remaining=
+    Number(team.remaining||0);
+
+  const bought=
+    Number(team.bought||0);
+
+
+  const legalMax=
+    maxBid(
+      remaining,
+      bought
+    );
+
+
+  if(bid>legalMax){
+
+    if(msg){
+      msg.textContent=
+        "Maximum legal bid for this team is "+
+        legalMax+
+        " points.";
+    }
+
+    return;
+  }
+
+
+  const teamName=
+    team.name||
+    "Unnamed Team";
+
+
+  await update(
+    ref(
+      db,
+      "tournaments/main/auction/current"
+    ),
+    {
+      currentBid:bid,
+      highestTeamId:teamId,
+      highestTeamName:teamName,
+      lastBidAt:Date.now()
+    }
+  );
+
+
+  if(msg){
+
+    msg.textContent=
+      "Bid placed: "+
+      bid+
+      " points by "+
+      teamName;
+
+  }
+
+  return;
+      }
+      
       if(action==="unsold"){
 
         await update(

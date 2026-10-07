@@ -1439,6 +1439,96 @@ $("save").onclick=async()=>{
 
 };
 
+/* =========================
+   ADD TEAM
+========================= */
+
+$("addTeam")?.addEventListener(
+  "click",
+  async ()=>{
+
+    const name=
+      $("teamName")?.value.trim()||"";
+
+    const email=
+      $("teamEmail")?.value.trim()||"";
+
+    const msg=
+      $("teamMsg");
+
+
+    if(!name){
+
+      if(msg){
+        msg.textContent=
+          "Please enter a team name.";
+      }
+
+      return;
+    }
+
+
+    try{
+
+      if(msg){
+        msg.textContent=
+          "Adding team...";
+      }
+
+
+      const teamsRef=
+        ref(
+          db,
+          "tournaments/main/teams"
+        );
+
+
+      const newTeam=
+        push(teamsRef);
+
+
+      await set(
+        newTeam,
+        {
+          name:name,
+          email:email,
+          remaining:Number(
+            settings.totalPoints
+          ),
+          bought:0,
+          players:{},
+          createdAt:Date.now()
+        }
+      );
+
+
+      $("teamName").value="";
+      $("teamEmail").value="";
+
+
+      if(msg){
+
+        msg.textContent=
+          "Team added successfully.";
+
+      }
+
+    }catch(err){
+
+      console.error(err);
+
+      if(msg){
+
+        msg.textContent=
+          "Could not add team: "+
+          err.message;
+
+      }
+
+    }
+
+  }
+);
 
 /* =========================
    AUTH STATE

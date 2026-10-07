@@ -18,6 +18,8 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getDatabase(app);
 
+alert("AuctionXI JavaScript is working");
+
 const $=id=>document.getElementById(id);
 const show=(id,v)=>$(id).classList.toggle("hidden",!v);
 

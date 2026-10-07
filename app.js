@@ -611,6 +611,7 @@ document.addEventListener(
 
   }
 );
+
 /* =========================
    LIVE AUCTION ACTIONS
 ========================= */
@@ -619,10 +620,7 @@ document.addEventListener(
   "click",
   async e=>{
 
-    const b=e.target.closest(
-      "[data-live-action]"
-    );
-
+    const b=e.target.closest("[data-live-action]");
     if(!b)return;
 
     const action=b.dataset.liveAction;
@@ -630,10 +628,7 @@ document.addEventListener(
     try{
 
       const snap=await get(
-        ref(
-          db,
-          "tournaments/main/auction/current"
-        )
+        ref(db,"tournaments/main/auction/current")
       );
 
       if(!snap.exists())return;
@@ -672,128 +667,115 @@ document.addEventListener(
 
       if(action==="sold"){
 
-  if(!auction.highestTeamId){
+        if(!auction.highestTeamId){
+          alert("There is no winning team.");
+          return;
+        }
 
-    alert("There is no winning team.");
-    return;
+        if(!auction.currentBid || auction.currentBid<=0){
+          alert("There is no bid for this player.");
+          return;
+        }
 
-  }
+        const teamRef=ref(
+          db,
+          "tournaments/main/teams/"+auction.highestTeamId
+        );
 
-  if(!auction.currentBid || auction.currentBid<=0){
+        const teamSnap=await get(teamRef);
 
-    alert("There is no bid for this player.");
-    return;
+        if(!teamSnap.exists()){
+          alert("Winning team was not found.");
+          return;
+        }
 
-  }
+        const team=teamSnap.val();
 
-  const teamRef=ref(
-    db,
-    "tournaments/main/teams/"+auction.highestTeamId
-  );
+        const remaining=Number(team.remaining||0);
+        const bought=Number(team.bought||0);
+        const bid=Number(auction.currentBid||0);
 
-  const teamSnap=await get(teamRef);
+        if(bid>remaining){
+          alert("Winning team does not have enough points.");
+          return;
+        }
 
-  if(!teamSnap.exists()){
+        const newRemaining=remaining-bid;
+        const newBought=bought+1;
 
-    alert("Winning team was not found.");
-    return;
+        const squadPlayer={
+          playerId:auction.playerId,
+          name:auction.name||"Player",
+          city:auction.city||"",
+          cricheroes:auction.cricheroes||"",
+          previous:auction.previous||"",
+          photo:auction.photo||"",
+          soldFor:bid,
+          status:"sold"
+        };
 
-  }
+        const updates={};
 
-  const team=teamSnap.val();
+        updates[
+          "tournaments/main/players/"+auction.databaseId+"/status"
+        ]="sold";
 
-  const remaining=Number(team.remaining||0);
-  const bought=Number(team.bought||0);
-  const bid=Number(auction.currentBid||0);
+        updates[
+          "tournaments/main/players/"+auction.databaseId+"/soldTo"
+        ]=auction.highestTeamId;
 
-  if(bid>remaining){
+        updates[
+          "tournaments/main/players/"+auction.databaseId+"/soldFor"
+        ]=bid;
 
-    alert("Winning team does not have enough points.");
-    return;
+        updates[
+          "tournaments/main/teams/"+auction.highestTeamId+"/remaining"
+        ]=newRemaining;
 
-  }
+        updates[
+          "tournaments/main/teams/"+auction.highestTeamId+"/bought"
+        ]=newBought;
 
-  const newRemaining=remaining-bid;
-  const newBought=bought+1;
+        const squadKey=push(
+          ref(
+            db,
+            "tournaments/main/teams/"+auction.highestTeamId+"/players"
+          )
+        ).key;
 
-  const playerRef=ref(
-    db,
-    "tournaments/main/players/"+auction.databaseId
-  );
+        updates[
+          "tournaments/main/teams/"+auction.highestTeamId+"/players/"+squadKey
+        ]=squadPlayer;
 
-  const squadPlayer={
-    playerId:auction.playerId,
-    name:auction.name||"Player",
-    city:auction.city||"",
-    cricheroes:auction.cricheroes||"",
-    previous:auction.previous||"",
-    photo:auction.photo||"",
-    soldFor:bid,
-    status:"sold"
-  };
+        updates[
+          "tournaments/main/auction/current/state"
+        ]="sold";
 
-  const updates={};
+        await update(ref(db),updates);
 
-  updates[
-    "tournaments/main/players/"+auction.databaseId+"/status"
-  ]="sold";
+        alert(
+          "SOLD to "+
+          (auction.highestTeamName||team.name||"winning team")+
+          " for "+
+          bid+
+          " points."
+        );
 
-  updates[
-    "tournaments/main/players/"+auction.databaseId+"/soldTo"
-  ]=auction.highestTeamId;
+      }
 
-  updates[
-    "tournaments/main/players/"+auction.databaseId+"/soldFor"
-  ]=bid;
+    }catch(err){
 
-  updates[
-    "tournaments/main/teams/"+auction.highestTeamId+"/remaining"
-  ]=newRemaining;
+      console.error(err);
 
-  updates[
-    "tournaments/main/teams/"+auction.highestTeamId+"/bought"
-  ]=newBought;
+      alert(
+        "Auction action failed: "+
+        err.message
+      );
 
-  const squadKey=push(
-    ref(
-      db,
-      "tournaments/main/teams/"+auction.highestTeamId+"/players"
-    )
-  ).key;
-
-  updates[
-    "tournaments/main/teams/"+auction.highestTeamId+"/players/"+squadKey
-  ]=squadPlayer;
-
-  updates[
-    "tournaments/main/auction/current/state"
-  ]="sold";
-
-  await update(ref(db),updates);
-
-  alert(
-    "SOLD to "+
-    (auction.highestTeamName||team.name||"winning team")+
-    " for "+
-    bid+
-    " points."
-  );
-
-}
-
-  }catch(err){
-
-    console.error(err);
-
-    alert(
-      "Auction action failed: "+
-      err.message
-    );
+    }
 
   }
-
 );
-
 
 /* =========================
    START AUCTION

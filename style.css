@@ -368,3 +368,47 @@ button{
     transition:none;
   }
 }
+
+/* =========================
+   AUCTIONXI LOGO
+========================= */
+
+.top > div b,
+.top > div small{
+  display:none;
+}
+
+.top > div::before{
+  content:"";
+  display:block;
+  width:180px;
+  height:72px;
+  background:url("auctionxi-logo.png") center/contain no-repeat;
+}
+
+.login h1{
+  font-size:0;
+  line-height:1;
+  margin-bottom:18px;
+}
+
+.login h1::before{
+  content:"";
+  display:block;
+  width:min(360px,100%);
+  height:190px;
+  margin:0 auto 10px;
+  background:url("auctionxi-logo.png") center/contain no-repeat;
+}
+
+@media(max-width:700px){
+  .top > div::before{
+    width:150px;
+    height:60px;
+  }
+
+  .login h1::before{
+    width:min(320px,100%);
+    height:170px;
+  }
+}

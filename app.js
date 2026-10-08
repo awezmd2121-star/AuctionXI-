@@ -1729,7 +1729,11 @@ onAuthStateChanged(
   $("teamNameOut").textContent="Team not linked";
   return;
 }
+const t=x.val();
 
+const b=+(t.bought||0);
+
+const r=+(t.remaining??settings.totalPoints);
 
           const t=x.val();
 

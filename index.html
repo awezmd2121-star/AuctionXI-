@@ -10,9 +10,7 @@
 </header>
   </main>
 <section id="login" class="card login"><h1>Welcome to AuctionXI</h1><p>Sign in with your assigned account.</p>
-  <div class="login-brand">
-  <img src="./auctionxi-logo.png" alt="AuctionXI Cricket Auction">
-  </div>
+
 <label>Email</label><input id="email" type="email" autocomplete="username">
 <label>Password</label><input id="password" type="password" autocomplete="current-password">
 <button id="loginBtn" class="primary">Sign in</button><p id="loginMsg"></p></section>
@@ -62,9 +60,9 @@
 
 <p id="playerMsg"></p>
   </section>
-<section class="card"><h2>V1 status</h2><div class="grid three"><div class="stat"><small>Tournament</small><b id="sName">—</b></div><div class="stat"><small>Points</small><b id="sPoints">—</b></div><div class="stat"><small>Players/team</small><b id="sReq">—</b></div></div></section>
+<section class="card admin-only"><h2>V1 status</h2><div class="grid three"><div class="stat"><small>Tournament</small><b id="sName">—</b></div><div class="stat"><small>Points</small><b id="sPoints">—</b></div><div class="stat"><small>Players/team</small><b id="sReq">—</b></div></div></section>
 </section>
-<section class="card">
+<section class="card admin-only">
   <h2>Player Management</h2>
   <p class="note">Review registered players before adding them to the auction.</p>
 
@@ -72,7 +70,7 @@
     <p class="note">Loading players...</p>
   </div>
 </section>
-    <section class="card">
+    <section class="card admin-only">
   <h2>Auction Pool</h2>
   <p class="note">Players approved and added to the auction appear here.</p>
 

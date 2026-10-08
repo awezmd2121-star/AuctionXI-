@@ -1538,10 +1538,10 @@ $("addTeam")?.addEventListener(
   async ()=>{
 
     const name=
-      $("newteamName")?.value.trim()||"";
+      $("newTeamName")?.value.trim()||"";
 
     const email=
-      $("newteamEmail")?.value.trim()||"";
+      $("newTeamEmail")?.value.trim()||"";
 
     const msg=
       $("teamMsg");
@@ -1592,8 +1592,8 @@ $("addTeam")?.addEventListener(
       );
 
 
-      $("newteamName").value="";
-      $("newteamEmail").value="";
+      $("newTeamName").value="";
+      $("newTeamEmail").value="";
 
 
       if(msg){

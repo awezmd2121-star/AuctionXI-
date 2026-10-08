@@ -738,35 +738,7 @@ function adminListeners(){
   }
 );
       
-      el.innerHTML="";
-
-      if(!s.exists()){
-
-        el.innerHTML=
-          "<p class='note'>No teams yet.</p>";
-
-        return;
-      }
-
-      Object.values(s.val()).forEach(t=>{
-
-        const d=document.createElement("div");
-
-        d.innerHTML=
-          "<b>"+
-          (t.name||"Unnamed team")+
-          "</b><br><small>"+
-          (t.email||"")+
-          "</small>";
-
-        el.appendChild(d);
-
-      });
-
-    }
-  );
-
-
+      
   /* Player Management */
 
   onValue(

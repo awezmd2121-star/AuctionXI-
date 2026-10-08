@@ -1715,7 +1715,7 @@ onAuthStateChanged(
       );
 
 
-      /* Team data */
+            /* Team data */
 
       onValue(
         ref(
@@ -1725,24 +1725,16 @@ onAuthStateChanged(
         x=>{
 
           if(!x.exists()){
-  console.error("Team not found. Check the teamId in users/"+u.uid);
-  $("teamNameOut").textContent="Team not linked";
-  return;
-}
-const t=x.val();
-
-const b=+(t.bought||0);
-
-const r=+(t.remaining??settings.totalPoints);
+            console.error(
+              "Team not found. Check the teamId in users/"+u.uid
+            );
+            $("teamNameOut").textContent="Team not linked";
+            return;
+          }
 
           const t=x.val();
-
-          const b=
-            +(t.bought||0);
-
-          const r=
-            +(t.remaining??settings.totalPoints);
-
+          const b=+(t.bought||0);
+          const r=+(t.remaining??settings.totalPoints);
 
           $("teamNameOut").textContent=
             t.name||"Team";
@@ -1750,20 +1742,14 @@ const r=+(t.remaining??settings.totalPoints);
           $("teamTournament").textContent=
             settings.tournamentName;
 
-          $("remaining").textContent=
-            r;
+          $("remaining").textContent=r;
 
           $("bought").textContent=
-            b+" / "+
-            settings.playersRequired;
+            b+" / "+settings.playersRequired;
 
           $("maxBid").textContent=
             maxBid(r,b);
-
-
-
         }
-
       );
 
     }

@@ -1748,12 +1748,7 @@ onAuthStateChanged(
           $("maxBid").textContent=
             maxBid(r,b);
 
-          $("reserve").textContent=
-            Math.max(
-              0,
-              settings.playersRequired-b
-            )*
-            settings.minBid;
+
 
         }
 

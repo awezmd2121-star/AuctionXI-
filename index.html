@@ -73,10 +73,12 @@
   </div>
       <section class="card">
 
+  <section class="card">
+
   <h2>Team Management</h2>
 
   <p class="note">
-    Add teams before starting the auction.
+    Add teams and monitor their auction status.
   </p>
 
   <div class="box">
@@ -84,7 +86,7 @@
     <label>Team Name</label>
 
     <input
-      id="newteamName"
+      id="newTeamName"
       type="text"
       placeholder="Enter team name"
     >
@@ -94,7 +96,7 @@
     </label>
 
     <input
-      id="newteamEmail"
+      id="newTeamEmail"
       type="email"
       placeholder="Enter team email"
     >
@@ -116,8 +118,22 @@
 
   </div>
 
-    </section>
-  <section class="card">
+  <div
+    class="box"
+    style="margin-top:16px"
+  >
+
+    <h3 style="margin-top:0">
+      Registered Teams
+    </h3>
+
+    <div id="registeredTeams">
+      <p class="note">Loading teams...</p>
+    </div>
+
+  </div>
+
+</section>
   <h2>Live Auction</h2>
   <p class="note">
     Current player and live bidding status.

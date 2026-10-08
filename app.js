@@ -1631,6 +1631,8 @@ onAuthStateChanged(
     /* Not logged in */
 
     if(!u){
+      
+      document.body.classList.remove("admin-logged-in");
 
       show("login",true);
       show("admin",false);
@@ -1673,6 +1675,8 @@ onAuthStateChanged(
     ========================= */
 
     if(p.role==="admin"){
+
+      document.body.classList.add("admin-logged-in");
 
       show("admin",true);
       show("team",false);

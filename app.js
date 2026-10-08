@@ -702,27 +702,20 @@ function adminListeners(){
 
 
   onValue(
-  ref(db,"tournaments/main/teams"),
-  s=>{
+    ref(db,"tournaments/main/teams"),
+    s=>{
 
-    const teams =
-      s.exists()
-        ? s.val()
-        : {};
+      const teams =
+        s.exists()
+          ? s.val()
+          : {};
 
-    liveAuctionTeams = teams;
+      liveAuctionTeams = teams;
 
-    renderRegisteredTeams(teams);
-
-    const currentAuctionEl=$("liveAuction");
-
-    if(currentAuctionEl){
+      renderRegisteredTeams(teams);
 
       get(
-        ref(
-          db,
-          "tournaments/main/auction/current"
-        )
+        ref(db,"tournaments/main/auction/current")
       ).then(currentSnap=>{
 
         renderLiveAuction(
@@ -734,11 +727,9 @@ function adminListeners(){
       });
 
     }
+  );
 
-  }
-);
-      
-      
+
   /* Player Management */
 
   onValue(
@@ -761,7 +752,9 @@ function adminListeners(){
       );
     }
   );
-    /* Live Auction */
+
+
+  /* Live Auction */
 
   onValue(
     ref(db,"tournaments/main/auction/current"),
@@ -771,8 +764,8 @@ function adminListeners(){
       );
     }
   );
-}
 
+}
 
 /* =========================
    PLAYER ACTIONS

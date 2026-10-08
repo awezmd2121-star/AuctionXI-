@@ -469,3 +469,7 @@ button{
 body:has(#login:not(.hidden)) .brand {
   display: none;
 }
+/* Hide admin-only cards until an admin logs in */
+body:not(.admin-logged-in) .admin-only {
+  display: none !important;
+}

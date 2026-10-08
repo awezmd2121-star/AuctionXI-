@@ -473,3 +473,6 @@ body:has(#login:not(.hidden)) .brand {
 body:not(.admin-logged-in) .admin-only {
   display: none !important;
 }
+.hidden {
+  display: none !important;
+}

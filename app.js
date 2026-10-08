@@ -561,7 +561,127 @@ function renderLiveAuction(data){
 /* =========================
    ADMIN LISTENERS
 ========================= */
+function renderRegisteredTeams(data){
 
+  const el=$("registeredTeams");
+
+  if(!el)return;
+
+  if(!data){
+
+    el.innerHTML=
+      "<p class='note'>No teams registered yet.</p>";
+
+    return;
+  }
+
+  const teams=Object.entries(data);
+
+  if(!teams.length){
+
+    el.innerHTML=
+      "<p class='note'>No teams registered yet.</p>";
+
+    return;
+  }
+
+  const required=
+    Number(settings.playersRequired||0);
+
+  const totalPoints=
+    Number(settings.totalPoints||0);
+
+  const minBid=
+    Number(settings.minBid||0);
+
+  el.innerHTML=teams.map(([id,t])=>{
+
+    const remaining=
+      Number(t.remaining ?? totalPoints);
+
+    const bought=
+      Number(t.bought||0);
+
+    const playersRemaining=
+      Math.max(
+        0,
+        required-bought
+      );
+
+    const spent=
+      Math.max(
+        0,
+        totalPoints-remaining
+      );
+
+    const reserved=
+      playersRemaining*minBid;
+
+    const legalMax=
+      bought>=required
+        ? 0
+        : maxBid(
+            remaining,
+            bought
+          );
+
+    return `
+
+      <div
+        class="box"
+        style="margin-bottom:12px"
+      >
+
+        <h3 style="margin:0 0 12px">
+          ${t.name||"Unnamed Team"}
+        </h3>
+
+        <div class="grid two">
+
+          <div>
+            <small>Remaining Points</small>
+            <br>
+            <b>${remaining}</b>
+          </div>
+
+          <div>
+            <small>Maximum Legal Bid</small>
+            <br>
+            <b>${legalMax}</b>
+          </div>
+
+          <div>
+            <small>Players Bought</small>
+            <br>
+            <b>${bought} / ${required}</b>
+          </div>
+
+          <div>
+            <small>Players Remaining</small>
+            <br>
+            <b>${playersRemaining}</b>
+          </div>
+
+          <div>
+            <small>Total Spent</small>
+            <br>
+            <b>${spent}</b>
+          </div>
+
+          <div>
+            <small>Reserved Minimum</small>
+            <br>
+            <b>${reserved}</b>
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }).join("");
+}
 function adminListeners(){
 
   onValue(
@@ -582,36 +702,41 @@ function adminListeners(){
 
 
   onValue(
-    ref(db,"tournaments/main/teams"),
-    s=>{
+  ref(db,"tournaments/main/teams"),
+  s=>{
 
-      const el=$("teams");
+    const teams =
+      s.exists()
+        ? s.val()
+        : {};
 
-      liveAuctionTeams=
-  s.exists()
-    ? s.val()
-    : {};
+    liveAuctionTeams = teams;
 
-      const currentAuctionEl=$("liveAuction");
+    renderRegisteredTeams(teams);
 
-if(currentAuctionEl){
+    const currentAuctionEl=$("liveAuction");
 
-  get(
-    ref(
-      db,
-      "tournaments/main/auction/current"
-    )
-  ).then(currentSnap=>{
+    if(currentAuctionEl){
 
-    renderLiveAuction(
-      currentSnap.exists()
-        ? currentSnap.val()
-        : null
-    );
+      get(
+        ref(
+          db,
+          "tournaments/main/auction/current"
+        )
+      ).then(currentSnap=>{
 
-  });
+        renderLiveAuction(
+          currentSnap.exists()
+            ? currentSnap.val()
+            : null
+        );
 
-}
+      });
+
+    }
+
+  }
+);
       
       el.innerHTML="";
 

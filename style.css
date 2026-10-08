@@ -412,3 +412,42 @@ button{
     height:170px;
   }
 }
+/* AuctionXI logo */
+.brand {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.brand img {
+  display: block;
+  width: 150px;
+  max-width: 45vw;
+  height: auto;
+  object-fit: contain;
+}
+
+.login-brand {
+  display: flex;
+  justify-content: center;
+  margin: 8px auto 24px;
+}
+
+.login-brand img {
+  display: block;
+  width: min(100%, 420px);
+  height: auto;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+@media (max-width: 480px) {
+  .brand img {
+    width: 125px;
+  }
+
+  .login-brand img {
+    width: 100%;
+  }
+}

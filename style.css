@@ -451,3 +451,21 @@ button{
     width: 100%;
   }
 }
+/* Keep login and dashboards separate */
+.hidden {
+  display: none !important;
+}
+
+#login:not(.hidden) {
+  display: block;
+}
+
+#admin:not(.hidden),
+#team:not(.hidden) {
+  display: block;
+}
+
+/* Hide the small header logo while logged out */
+body:has(#login:not(.hidden)) .brand {
+  display: none;
+}

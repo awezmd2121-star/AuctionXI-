@@ -1724,7 +1724,11 @@ onAuthStateChanged(
         ),
         x=>{
 
-          if(!x.exists())return;
+          if(!x.exists()){
+  console.error("Team not found. Check the teamId in users/"+u.uid);
+  $("teamNameOut").textContent="Team not linked";
+  return;
+}
 
 
           const t=x.val();

@@ -476,3 +476,7 @@ body:not(.admin-logged-in) .admin-only {
 .hidden {
   display: none !important;
 }
+/* Controls visibility of hidden sections */
+.hidden {
+  display: none !important;
+}

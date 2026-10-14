@@ -729,7 +729,56 @@ function adminListeners(){
     }
   );
 
+  /* Other teams live information */
 
+onValue(
+  ref(db, "tournaments/main/teams"),
+  snapshot => {
+    const container = $("otherTeams");
+
+    if (!container) return;
+
+    if (!snapshot.exists()) {
+      container.innerHTML = '<p class="note">No teams registered yet.</p>';
+      return;
+    }
+
+    const teams = snapshot.val();
+
+    const otherTeams = Object.entries(teams)
+      .filter(([teamId]) => teamId !== p.teamId);
+
+    if (otherTeams.length === 0) {
+      container.innerHTML = '<p class="note">No other teams registered yet.</p>';
+      return;
+    }
+
+    container.innerHTML = otherTeams.map(([teamId, team]) => {
+      const bought = Number(team.bought || 0);
+      const remaining = Number(team.remaining ?? settings.totalPoints);
+      const limit = maxBid(remaining, bought);
+
+      const name = String(team.name || "Unnamed Team")
+        .replace(/[&<>"']/g, char => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        })[char]);
+
+      return `
+        <div class="box" style="margin-bottom:12px">
+          <h3>${name}</h3>
+          <p>Remaining points: <strong>${remaining}</strong></p>
+          <p>Players bought: <strong>${bought} / ${settings.playersRequired}</strong></p>
+          <p>Maximum legal bid: <strong>${limit}</strong></p>
+        </div>
+      `;
+    }).join("");
+  }
+);
+  
   /* Player Management */
 
   onValue(

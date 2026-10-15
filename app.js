@@ -1,6 +1,6 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import{getDatabase,ref,get,set,push,onValue,update,remove}from"https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+import{getDatabase,ref,get,set,push,onValue,update}from"https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 /* AuctionXI Firebase Web App */
 const firebaseConfig={
@@ -262,15 +262,6 @@ function renderPlayers(data){
           `
           : ""
         }
-
-        <button
-          type="button"
-          class="secondary"
-          data-player-remove="${id}"
-          style="border-color:#c62828;color:#c62828"
-        >
-          Remove Player
-        </button>
 
       </div>
 
@@ -683,15 +674,6 @@ function renderRegisteredTeams(data){
 
         </div>
 
-        <button
-          type="button"
-          class="secondary"
-          data-team-remove="${id}"
-          style="margin-top:14px;border-color:#c62828;color:#c62828;width:100%"
-        >
-          Remove Team
-        </button>
-
       </div>
 
     `;
@@ -781,65 +763,6 @@ function adminListeners(){
   );
 
 }
-
-/* =========================
-   ADMIN REMOVE ACTIONS
-========================= */
-document.addEventListener("click", async e => {
-  const removePlayerButton = e.target.closest("[data-player-remove]");
-  const removeTeamButton = e.target.closest("[data-team-remove]");
-  if (!removePlayerButton && !removeTeamButton) return;
-
-  // Only allow removals while an admin session is active.
-  if (!document.body.classList.contains("admin-logged-in")) {
-    alert("Only the admin can remove players or teams.");
-    return;
-  }
-
-  try {
-    if (removePlayerButton) {
-      const playerId = removePlayerButton.dataset.playerRemove;
-      const playerSnap = await get(ref(db, "tournaments/main/players/" + playerId));
-      if (!playerSnap.exists()) {
-        alert("This player was already removed.");
-        return;
-      }
-      const currentSnap = await get(ref(db, "tournaments/main/auction/current"));
-      const current = currentSnap.exists() ? currentSnap.val() : null;
-      if (current && String(current.playerId || "") === String(playerId)) {
-        alert("This player is currently in the live auction. Mark the player SOLD/UNSOLD or finish the auction before removing them.");
-        return;
-      }
-      const player = playerSnap.val();
-      if (!confirm("Remove " + (player.name || "this player") + " permanently from AuctionXI? This cannot be undone.")) return;
-      removePlayerButton.disabled = true;
-      await remove(ref(db, "tournaments/main/players/" + playerId));
-      alert("Player removed successfully.");
-      return;
-    }
-
-    if (removeTeamButton) {
-      const teamId = removeTeamButton.dataset.teamRemove;
-      const teamSnap = await get(ref(db, "tournaments/main/teams/" + teamId));
-      if (!teamSnap.exists()) {
-        alert("This team was already removed.");
-        return;
-      }
-      const team = teamSnap.val();
-      const bought = Number(team.bought || 0);
-      const warning = bought > 0
-        ? "\n\nWARNING: This team has bought " + bought + " player(s). Removing it will erase its team record and points from this tournament."
-        : "";
-      if (!confirm("Remove team "" + (team.name || "Unnamed Team") + "" from this tournament?" + warning + "\n\nThis does not delete the team's Firebase login account.")) return;
-      removeTeamButton.disabled = true;
-      await remove(ref(db, "tournaments/main/teams/" + teamId));
-      alert("Team removed from the tournament. Its login account still exists and must be disabled separately if needed.");
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Could not remove item: " + (err.message || err));
-  }
-});
 
 /* =========================
    PLAYER ACTIONS

@@ -1,6 +1,6 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import{getDatabase,ref,get,set,push,onValue,update}from"https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+import{getDatabase,ref,get,set,push,onValue,update,remove}from"https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 /* AuctionXI Firebase Web App */
 const firebaseConfig={
@@ -262,6 +262,15 @@ function renderPlayers(data){
           `
           : ""
         }
+
+        <button
+          type="button"
+          class="secondary"
+          data-player-remove="${id}"
+          style="border-color:#c62828;color:#c62828"
+        >
+          Remove Player
+        </button>
 
       </div>
 
@@ -674,6 +683,15 @@ function renderRegisteredTeams(data){
 
         </div>
 
+        <button
+          type="button"
+          class="secondary"
+          data-team-remove="${id}"
+          style="margin-top:14px;border-color:#c62828;color:#c62828;width:100%"
+        >
+          Remove Team
+        </button>
+
       </div>
 
     `;
@@ -763,6 +781,65 @@ function adminListeners(){
   );
 
 }
+
+/* =========================
+   ADMIN REMOVE ACTIONS
+========================= */
+document.addEventListener("click", async e => {
+  const removePlayerButton = e.target.closest("[data-player-remove]");
+  const removeTeamButton = e.target.closest("[data-team-remove]");
+  if (!removePlayerButton && !removeTeamButton) return;
+
+  // Only allow removals while an admin session is active.
+  if (!document.body.classList.contains("admin-logged-in")) {
+    alert("Only the admin can remove players or teams.");
+    return;
+  }
+
+  try {
+    if (removePlayerButton) {
+      const playerId = removePlayerButton.dataset.playerRemove;
+      const playerSnap = await get(ref(db, "tournaments/main/players/" + playerId));
+      if (!playerSnap.exists()) {
+        alert("This player was already removed.");
+        return;
+      }
+      const currentSnap = await get(ref(db, "tournaments/main/auction/current"));
+      const current = currentSnap.exists() ? currentSnap.val() : null;
+      if (current && String(current.playerId || "") === String(playerId)) {
+        alert("This player is currently in the live auction. Mark the player SOLD/UNSOLD or finish the auction before removing them.");
+        return;
+      }
+      const player = playerSnap.val();
+      if (!confirm("Remove " + (player.name || "this player") + " permanently from AuctionXI? This cannot be undone.")) return;
+      removePlayerButton.disabled = true;
+      await remove(ref(db, "tournaments/main/players/" + playerId));
+      alert("Player removed successfully.");
+      return;
+    }
+
+    if (removeTeamButton) {
+      const teamId = removeTeamButton.dataset.teamRemove;
+      const teamSnap = await get(ref(db, "tournaments/main/teams/" + teamId));
+      if (!teamSnap.exists()) {
+        alert("This team was already removed.");
+        return;
+      }
+      const team = teamSnap.val();
+      const bought = Number(team.bought || 0);
+      const warning = bought > 0
+        ? "\n\nWARNING: This team has bought " + bought + " player(s). Removing it will erase its team record and points from this tournament."
+        : "";
+      if (!confirm("Remove team "" + (team.name || "Unnamed Team") + "" from this tournament?" + warning + "\n\nThis does not delete the team's Firebase login account.")) return;
+      removeTeamButton.disabled = true;
+      await remove(ref(db, "tournaments/main/teams/" + teamId));
+      alert("Team removed from the tournament. Its login account still exists and must be disabled separately if needed.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Could not remove item: " + (err.message || err));
+  }
+});
 
 /* =========================
    PLAYER ACTIONS
@@ -994,808 +1071,4 @@ document.addEventListener(
         await update(
           ref(
             db,
-            "tournaments/main/players/"+auction.databaseId
-          ),
-          {
-            status:"unsold"
-          }
-        );
-
-        await update(
-          ref(
-            db,
-            "tournaments/main/auction/current"
-          ),
-          {
-            state:"unsold"
-          }
-        );
-
-        return;
-      }
-
-      if(action==="sold"){
-
-        if(!auction.highestTeamId){
-          alert("There is no winning team.");
-          return;
-        }
-
-        if(!auction.currentBid || auction.currentBid<=0){
-          alert("There is no bid for this player.");
-          return;
-        }
-
-        const teamRef=ref(
-          db,
-          "tournaments/main/teams/"+auction.highestTeamId
-        );
-
-        const teamSnap=await get(teamRef);
-
-        if(!teamSnap.exists()){
-          alert("Winning team was not found.");
-          return;
-        }
-
-        const team=teamSnap.val();
-
-        const remaining=Number(team.remaining||0);
-        const bought=Number(team.bought||0);
-        const bid=Number(auction.currentBid||0);
-
-        if(bid>remaining){
-          alert("Winning team does not have enough points.");
-          return;
-        }
-
-        const newRemaining=remaining-bid;
-        const newBought=bought+1;
-
-        const squadPlayer={
-          playerId:auction.playerId,
-          name:auction.name||"Player",
-          city:auction.city||"",
-          cricheroes:auction.cricheroes||"",
-          previous:auction.previous||"",
-          photo:auction.photo||"",
-          soldFor:bid,
-          status:"sold"
-        };
-
-        const updates={};
-
-        updates[
-          "tournaments/main/players/"+auction.databaseId+"/status"
-        ]="sold";
-
-        updates[
-          "tournaments/main/players/"+auction.databaseId+"/soldTo"
-        ]=auction.highestTeamId;
-
-        updates[
-          "tournaments/main/players/"+auction.databaseId+"/soldFor"
-        ]=bid;
-
-        updates[
-          "tournaments/main/teams/"+auction.highestTeamId+"/remaining"
-        ]=newRemaining;
-
-        updates[
-          "tournaments/main/teams/"+auction.highestTeamId+"/bought"
-        ]=newBought;
-
-        const squadKey=push(
-          ref(
-            db,
-            "tournaments/main/teams/"+auction.highestTeamId+"/players"
-          )
-        ).key;
-
-        updates[
-          "tournaments/main/teams/"+auction.highestTeamId+"/players/"+squadKey
-        ]=squadPlayer;
-
-        updates[
-          "tournaments/main/auction/current/state"
-        ]="sold";
-
-        await update(ref(db),updates);
-
-        alert(
-          "SOLD to "+
-          (auction.highestTeamName||team.name||"winning team")+
-          " for "+
-          bid+
-          " points."
-        );
-
-      }
-
-    }catch(err){
-
-      console.error(err);
-
-      alert(
-        "Auction action failed: "+
-        err.message
-      );
-
-    }
-
-  }
-);
-
-/* =========================
-   START AUCTION
-========================= */
-
-document.addEventListener(
-  "click",
-  async e=>{
-
-    const b=e.target.closest(
-      "[data-auction-action]"
-    );
-
-    if(!b)return;
-
-    const action=b.dataset.auctionAction;
-    const id=b.dataset.playerId;
-
-    if(action!=="start")return;
-
-    try{
-
-      /* Get selected player */
-
-      const playerSnap=await get(
-        ref(
-          db,
-          "tournaments/main/players/"+id
-        )
-      );
-
-      if(!playerSnap.exists()){
-
-        alert("Player not found.");
-
-        return;
-      }
-
-      const player=playerSnap.val();
-
-
-      /* Verify player is actually in auction pool */
-
-      if(player.status!=="auction_pool"){
-
-        alert(
-          "This player is not in the auction pool."
-        );
-
-        return;
-      }
-
-
-      /* Check whether another auction is already live */
-
-      const currentSnap=await get(
-        ref(
-          db,
-          "tournaments/main/auction/current"
-        )
-      );
-
-      if(
-        currentSnap.exists() &&
-        currentSnap.val().state==="live"
-      ){
-
-        alert(
-          "Another auction is already live."
-        );
-
-        return;
-      }
-
-
-      /* Start auction */
-
-      await update(
-        ref(db),
-        {
-
-          [`tournaments/main/players/${id}/status`]:
-            "auction_live",
-
-          "tournaments/main/auction/current":{
-            playerId:player.playerId||"",
-            databaseId:id,
-            name:player.name||"",
-            city:player.city||"",
-            cricheroes:player.cricheroes||"",
-            previous:player.previous||"",
-            photo:player.photo||"",
-            state:"live",
-            currentBid:0,
-            highestTeamId:"",
-            highestTeamName:"",
-            startedAt:Date.now()
-          }
-
-        }
-      );
-
-
-      alert(
-        `${player.name||"Player"} auction started.`
-      );
-
-    }catch(err){
-
-      console.error(err);
-
-      alert(
-        "Could not start auction: "+
-        err.message
-      );
-
-    }
-
-  }
-);
-
-
-/* =========================
-   LOGIN
-========================= */
-
-async function login(){
-
-  const email=$("email")?.value.trim()||"";
-  const password=$("password")?.value||"";
-  const msg=$("loginMsg");
-  const btn=$("loginBtn");
-
-  if(!email || !password){
-
-    if(msg){
-      msg.textContent="Please enter both email and password.";
-    }
-
-    return;
-  }
-
-  if(btn){
-    btn.disabled=true;
-    btn.textContent="Signing in...";
-  }
-
-  try{
-
-    await signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-
-  }catch(error){
-
-    console.error("AuctionXI login error:",error);
-
-    if(msg){
-      msg.textContent=
-        error.message||"Login failed.";
-    }
-
-  }finally{
-
-    if(btn){
-      btn.disabled=false;
-      btn.textContent="Sign in";
-    }
-
-  }
-
-}
-
-$("loginBtn")?.addEventListener(
-  "click",
-  login
-);
-
-$("password")?.addEventListener(
-  "keydown",
-  e=>{
-    if(e.key==="Enter"){
-      login();
-    }
-  }
-);
-
-
-/* =========================
-   PLAYER REGISTRATION
-========================= */
-
-async function addPlayer(e){
-
-  e?.preventDefault();
-
-  const msgEl=$("playerMsg");
-
-  const name=
-    $("pName")?.value.trim();
-
-  const city=
-    $("pCity")?.value.trim();
-
-  const cricheroes=
-    $("pCric")?.value.trim();
-
-  const previous=
-    $("pPrevious")?.value.trim();
-
-  const file=
-    $("pPhoto")?.files?.[0];
-
-
-  if(
-    !name||
-    !city||
-    !cricheroes||
-    !file
-  ){
-
-    if(msgEl){
-
-      msgEl.textContent=
-        "Please fill all required fields and select a photo.";
-
-    }
-
-    return;
-  }
-
-
-  try{
-
-    if(msgEl){
-
-      msgEl.textContent=
-        "Registering player...";
-
-    }
-
-
-    const photo=
-      await compressPhoto(file);
-
-
-    const snap=
-      await get(
-        ref(db,"tournaments/main/players")
-      );
-
-
-    const existing=
-      snap.exists()
-        ? snap.val()
-        : {};
-
-
-    let highest=0;
-
-
-    Object.values(existing).forEach(p=>{
-
-      const n=
-        Number(
-          String(p.playerId||"")
-            .replace("AXI-","")
-        );
-
-      if(Number.isFinite(n)){
-
-        highest=
-          Math.max(
-            highest,
-            n
-          );
-
-      }
-
-    });
-
-
-    const playerId=
-      `AXI-${String(highest+1).padStart(4,"0")}`;
-
-
-    const newPlayer=
-      push(
-        ref(db,"tournaments/main/players")
-      );
-
-
-    await set(
-      newPlayer,
-      {
-        playerId,
-        name,
-        city,
-        cricheroes,
-        previous,
-        photo,
-        status:"pending",
-        selected:false,
-        createdAt:Date.now()
-      }
-    );
-
-
-    $("pName").value="";
-    $("pCity").value="";
-    $("pCric").value="";
-    $("pPrevious").value="";
-    $("pPhoto").value="";
-    $("photoPreview").innerHTML="";
-
-
-    if(msgEl){
-
-      msgEl.textContent=
-        `Player registered successfully — ${playerId}`;
-
-    }
-
-  }catch(err){
-
-    console.error(err);
-
-    if(msgEl){
-
-      msgEl.textContent=
-        "Could not register player: "+
-        err.message;
-
-    }
-
-  }
-
-}
-
-
-$("addPlayer").onclick=
-  addPlayer;
-
-
-/* =========================
-   LOGOUT
-========================= */
-
-$("logout").onclick=
-  ()=>signOut(auth);
-
-
-/* =========================
-   SAVE TOURNAMENT SETTINGS
-========================= */
-
-$("save").onclick=async()=>{
-
-  const total=
-    +$("points").value;
-
-  const req=
-    +$("required").value;
-
-  const min=
-    +$("minBid").value;
-
-
-  if(total<req*min){
-
-    $("saveMsg").textContent=
-      "Total points must be at least "+
-      req*min;
-
-    return;
-  }
-
-
-  await set(
-    ref(db,"tournaments/main/settings"),
-    {
-      tournamentName:
-        $("tName").value.trim()||
-        "AuctionXI Tournament",
-
-      totalPoints:total,
-
-      playersRequired:req,
-
-      minBid:min
-    }
-  );
-
-
-  $("saveMsg").textContent=
-    "Settings saved.";
-
-};
-
-/* =========================
-   ADD TEAM
-========================= */
-
-$("addTeam")?.addEventListener(
-  "click",
-  async ()=>{
-
-    const name=
-      $("newTeamName")?.value.trim()||"";
-
-    const email=
-      $("newTeamEmail")?.value.trim()||"";
-
-    const msg=
-      $("teamMsg");
-
-
-    if(!name){
-
-      if(msg){
-        msg.textContent=
-          "Please enter a team name.";
-      }
-
-      return;
-    }
-
-
-    try{
-
-      if(msg){
-        msg.textContent=
-          "Adding team...";
-      }
-
-
-      const teamsRef=
-        ref(
-          db,
-          "tournaments/main/teams"
-        );
-
-
-      const newTeam=
-        push(teamsRef);
-
-
-      await set(
-        newTeam,
-        {
-          name:name,
-          email:email,
-          remaining:Number(
-            settings.totalPoints
-          ),
-          bought:0,
-          players:{},
-          createdAt:Date.now()
-        }
-      );
-
-
-      $("newTeamName").value="";
-      $("newTeamEmail").value="";
-
-
-      if(msg){
-
-        msg.textContent=
-          "Team added successfully.";
-
-      }
-
-    }catch(err){
-
-      console.error(err);
-
-      if(msg){
-
-        msg.textContent=
-          "Could not add team: "+
-          err.message;
-
-      }
-
-    }
-
-  }
-);
-
-/* =========================
-   AUTH STATE
-========================= */
-
-onAuthStateChanged(
-  auth,
-  async u=>{
-
-    /* Not logged in */
-
-    if(!u){
-      
-      document.body.classList.remove("admin-logged-in");
-
-      show("login",true);
-      show("admin",false);
-      show("team",false);
-      show("logout",false);
-
-      return;
-    }
-
-
-    show("login",false);
-    show("logout",true);
-
-
-    /* Load user role */
-
-    const s=
-      await get(
-        ref(db,"users/"+u.uid)
-      );
-
-
-    if(!s.exists()){
-
-      alert(
-        "This account is not assigned an AuctionXI role."
-      );
-
-      await signOut(auth);
-
-      return;
-    }
-
-
-    const p=s.val();
-
-
-    /* =========================
-       ADMIN
-    ========================= */
-
-    if(p.role==="admin"){
-
-      document.body.classList.add("admin-logged-in");
-
-      show("admin",true);
-      show("team",false);
-
-      adminListeners();
-
-    }
-
-
-    /* =========================
-       TEAM
-    ========================= */
-
-    else if(p.role==="team"){
-
-      show("team",true);
-      show("admin",false);
-
-
-      /* Tournament settings */
-
-      onValue(
-        ref(db,"tournaments/main/settings"),
-        x=>{
-
-          if(x.exists()){
-
-            settings={
-              ...settings,
-              ...x.val()
-            };
-
-          }
-
-        }
-      );
-
-
-            /* Team data */
-
-      onValue(
-        ref(
-          db,
-          "tournaments/main/teams/"+p.teamId
-        ),
-        x=>{
-
-          if(!x.exists()){
-            console.error(
-              "Team not found. Check the teamId in users/"+u.uid
-            );
-            $("teamNameOut").textContent="Team not linked";
-            return;
-          }
-
-          const t=x.val();
-          const b=+(t.bought||0);
-          const r=+(t.remaining??settings.totalPoints);
-
-          $("teamNameOut").textContent=
-            t.name||"Team";
-
-          $("teamTournament").textContent=
-            settings.tournamentName;
-
-          $("remaining").textContent=r;
-
-          $("bought").textContent=
-            b+" / "+settings.playersRequired;
-
-          $("maxBid").textContent=
-            maxBid(r,b);
-        }
-      );
-
-      /* Other teams live information */
-      onValue(
-        ref(db,"tournaments/main/teams"),
-        snapshot=>{
-          const container=$("otherTeams");
-          if(!container)return;
-
-          if(!snapshot.exists()){
-            container.innerHTML='<p class="note">No teams registered yet.</p>';
-            return;
-          }
-
-          const teams=snapshot.val();
-          const otherTeams=Object.entries(teams)
-            .filter(([teamId])=>teamId!==p.teamId);
-
-          if(!otherTeams.length){
-            container.innerHTML='<p class="note">No other teams registered yet.</p>';
-            return;
-          }
-
-          container.innerHTML=otherTeams.map(([teamId,team])=>{
-            const bought=Number(team.bought||0);
-            const remaining=Number(team.remaining??settings.totalPoints);
-            const limit=maxBid(remaining,bought);
-            const name=String(team.name||"Unnamed Team")
-              .replace(/[&<>"']/g,char=>({
-                "&":"&amp;",
-                "<":"&lt;",
-                ">":"&gt;",
-                '"':"&quot;",
-                "'":"&#39;"
-              })[char]);
-
-            return `
-              <div class="box" style="margin-bottom:12px">
-                <h3>${name}</h3>
-                <p>Remaining points: <strong>${remaining}</strong></p>
-                <p>Players bought: <strong>${bought} / ${settings.playersRequired}</strong></p>
-                <p>Maximum legal bid: <strong>${limit}</strong></p>
-              </div>
-            `;
-          }).join("");
-        }
-      );
-
-    }
-
-  }
-);
+            "tournamen

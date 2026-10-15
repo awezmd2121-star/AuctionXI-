@@ -263,6 +263,16 @@ function renderPlayers(data){
           : ""
         }
 
+        <button
+          type="button"
+          class="secondary"
+          data-player-action="remove"
+          data-player-id="${id}"
+          style="background:#8b1e1e;color:#fff"
+        >
+          Remove Player
+        </button>
+
       </div>
 
     </div>
@@ -674,6 +684,16 @@ function renderRegisteredTeams(data){
 
         </div>
 
+        <button
+          type="button"
+          class="secondary"
+          data-team-action="remove"
+          data-team-id="${id}"
+          style="margin-top:12px;background:#8b1e1e;color:#fff"
+        >
+          Remove Team
+        </button>
+
       </div>
 
     `;
@@ -782,6 +802,29 @@ document.addEventListener(
     const action=b.dataset.playerAction;
 
     try{
+      if(action==="remove"){
+        const playerSnap=await get(ref(db,"tournaments/main/players/"+id));
+        if(!playerSnap.exists()) return;
+        const player=playerSnap.val();
+
+        const currentSnap=await get(ref(db,"tournaments/main/auction/current"));
+        const current=currentSnap.exists()?currentSnap.val():null;
+        if(current && current.state==="live" && current.databaseId===id){
+          alert("This player is currently live in the auction. Finish the auction first.");
+          return;
+        }
+        if(player.status==="sold"){
+          alert("This player has already been sold. To protect team and auction records, sold players cannot be removed here.");
+          return;
+        }
+        if(!confirm("Remove "+(player.name||"this player")+" permanently from AuctionXI?")) return;
+        await set(ref(db,"tournaments/main/players/"+id),null);
+        const auctionSnap=await get(ref(db,"tournaments/main/auction/current"));
+        if(auctionSnap.exists() && auctionSnap.val().databaseId===id){
+          await set(ref(db,"tournaments/main/auction/current"),null);
+        }
+        return;
+      }
 
       await update(
         ref(
@@ -811,6 +854,61 @@ document.addEventListener(
 
   }
 );
+
+/* =========================
+   REMOVE TEAM
+========================= */
+document.addEventListener("click", async e=>{
+  const button=e.target.closest("[data-team-action='remove']");
+  if(!button) return;
+
+  const teamId=button.dataset.teamId;
+  try{
+    const teamSnap=await get(ref(db,"tournaments/main/teams/"+teamId));
+    if(!teamSnap.exists()){
+      alert("This team no longer exists.");
+      return;
+    }
+    const team=teamSnap.val();
+    const bought=Number(team.bought||0);
+
+    if(bought>0){
+      alert("This team has already bought "+bought+" player(s). To protect auction records, remove is disabled for teams with purchased players.");
+      return;
+    }
+
+    const currentSnap=await get(ref(db,"tournaments/main/auction/current"));
+    if(currentSnap.exists()){
+      const current=currentSnap.val();
+      if(current.state==="live" && current.highestTeamId===teamId){
+        alert("This team currently has the highest bid. Finish or reset the live auction before removing it.");
+        return;
+      }
+    }
+
+    if(!confirm("Remove team '"+(team.name||"Unnamed Team")+"' from this tournament? The Firebase login account will not be deleted.")) return;
+
+    await set(ref(db,"tournaments/main/teams/"+teamId),null);
+
+    // Remove the team-role mapping so its old login cannot open a missing team dashboard.
+    const usersSnap=await get(ref(db,"users"));
+    if(usersSnap.exists()){
+      const users=usersSnap.val();
+      const updates={};
+      Object.entries(users).forEach(([uid,user])=>{
+        if(user && user.role==="team" && user.teamId===teamId){
+          updates["users/"+uid]=null;
+        }
+      });
+      if(Object.keys(updates).length) await update(ref(db),updates);
+    }
+
+    alert("Team removed from the tournament. Its Firebase login account still exists.");
+  }catch(err){
+    console.error(err);
+    alert("Could not remove team: "+err.message);
+  }
+});
 
 /* =========================
    LIVE AUCTION ACTIONS

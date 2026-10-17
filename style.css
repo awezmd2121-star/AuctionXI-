@@ -414,83 +414,23 @@ button{
 }
 
 
-/* ===== AuctionXI dashboard and mobile logo fix ===== */
-.top .brand{
-  display:flex;
-  align-items:center;
-  flex:0 1 auto;
-  min-width:0;
-  text-decoration:none;
-}
-.top .brand img{
-  display:block;
-  width:clamp(120px, 24vw, 190px);
-  height:auto;
-  max-height:58px;
-  object-fit:contain;
-}
-.top > div::before{display:none!important;content:none!important;}
-.login h1::before{
-  width:min(260px, 72vw);
-  height:112px;
-}
-.squad-player{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:12px;
-  margin:0 0 10px;
-  border:1px solid var(--line-soft);
-  border-radius:12px;
-  background:rgba(3,13,8,.62);
-  min-width:0;
-}
-.squad-photo{
-  width:64px;
-  height:64px;
-  flex:0 0 64px;
-  object-fit:cover;
-  border-radius:10px;
-  background:rgba(255,255,255,.06);
-}
-.squad-player-info{flex:1;min-width:0;}
-.squad-player-info strong{display:block;overflow-wrap:anywhere;}
-.squad-meta{
-  display:flex;
-  flex-wrap:wrap;
-  gap:4px 10px;
-  color:var(--muted);
-  font-size:12px;
-  margin-top:4px;
-}
-.squad-price{
-  flex:0 0 auto;
-  text-align:right;
-  white-space:nowrap;
-}
-.squad-price small{display:block;color:var(--muted);}
-.squad-price strong{color:var(--accent2);}
-#mySquad{min-width:0;}
-#team .grid.three{grid-template-columns:repeat(3,minmax(0,1fr));}
-@media(max-width:700px){
-  .top .brand img{
-    width:clamp(105px, 38vw, 150px);
-    max-height:46px;
-  }
-  .login h1::before{
-    width:min(220px, 70vw);
-    height:92px;
-  }
-  #team .grid.three{grid-template-columns:repeat(2,minmax(0,1fr));}
-  #team .grid.three .stat:nth-child(2){grid-column:span 2;}
-  .squad-player{gap:8px;padding:9px;}
-  .squad-photo{width:52px;height:52px;flex-basis:52px;}
-  .squad-meta{font-size:11px;}
-  .squad-price strong{font-size:12px;}
-}
-@media(max-width:360px){
-  #team .grid.three{grid-template-columns:1fr;}
-  #team .grid.three .stat:nth-child(2){grid-column:auto;}
-  .squad-player{flex-wrap:wrap;}
-  .squad-price{margin-left:60px;text-align:left;}
+/* Team dashboard auction sections */
+.team-auction-section h2{display:flex;align-items:center;gap:8px}
+.team-auction-player{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft);min-width:0}
+.team-auction-player:last-child{border-bottom:0}
+.team-auction-photo{width:68px;height:68px;flex:0 0 68px;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.2)}
+.team-photo-placeholder{display:grid;place-items:center;font-size:27px}
+.team-auction-info{display:flex;flex-direction:column;gap:4px;min-width:0;overflow-wrap:anywhere}
+.team-auction-info strong{color:var(--text)}
+.team-auction-info small{font-size:12px;color:var(--muted)}
+.live-player-banner{border:1px solid rgba(248,113,113,.42);border-radius:13px;padding:12px;background:rgba(127,29,29,.12)}
+.live-pill{display:inline-block;border-radius:999px;padding:4px 9px;margin-bottom:6px;background:rgba(220,38,38,.2);color:#fca5a5;font-size:10px;font-weight:900;letter-spacing:.8px}
+.live-bid-line{margin-top:5px}
+.live-bid-line strong,.sold-detail strong{color:var(--accent2)}
+.status-label{color:var(--accent2)!important}
+.unsold-label{color:#fbbf24!important;font-weight:850}
+@media(max-width:600px){
+  .team-auction-player{align-items:flex-start;gap:10px}
+  .team-auction-photo{width:58px;height:58px;flex-basis:58px}
+  .team-auction-info small{font-size:11px}
 }

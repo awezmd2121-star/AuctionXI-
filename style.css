@@ -432,44 +432,43 @@ button{
   .team-auction-info small{font-size:11px}
 }
 
-/* FIX MY SQUAD PLAYER PHOTO SIZE */
-
-.squad-player{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:8px 0;
+/* MY SQUAD — LARGER PLAYER PHOTOS */
+.squad-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
 }
 
-.squad-photo{
-  width:40px !important;
-  height:40px !important;
-  min-width:40px;
-  flex:0 0 40px !important;
-  object-fit:cover;
-  border-radius:8px;
+.squad-photo {
+  width: 50px !important;
+  height: 50px !important;
+  min-width: 50px;
+  flex: 0 0 50px !important;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
-.squad-player-info{
-  min-width:0;
-  overflow-wrap:anywhere;
+.squad-player-info {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-.squad-player-info img{
-  width:40px !important;
-  height:40px !important;
+.squad-player-info img {
+  width: 50px !important;
+  height: 50px !important;
 }
 
-@media(max-width:600px){
-  .squad-photo{
-    width:36px !important;
-    height:36px !important;
-    min-width:36px;
-    flex-basis:36px !important;
+@media (max-width: 600px) {
+  .squad-photo {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px;
+    flex-basis: 46px !important;
   }
 
-  .squad-player-info img{
-    width:36px !important;
-    height:36px !important;
+  .squad-player-info img {
+    width: 46px !important;
+    height: 46px !important;
   }
 }

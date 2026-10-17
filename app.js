@@ -145,70 +145,184 @@ function renderSettings(){
 
 
 /* =========================
+   TEAM AUCTION STATUS
+========================= */
+let teamDashboardPlayers = {};
+let teamCurrentAuction = null;
+let teamDashboardTeams = {};
+
+function escapeHTML(value){
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  })[char]);
+}
+
+function teamPlayerCard(player, extra=""){
+  const name=escapeHTML(player.name || "Player");
+  const photo=player.photo ? `<img class="team-auction-photo" src="${escapeHTML(player.photo)}" alt="${name}">` : `<div class="team-auction-photo team-photo-placeholder">🏏</div>`;
+  const meta=[player.playerId,player.city].filter(Boolean).map(escapeHTML).join(" · ");
+  return `<article class="team-auction-player">${photo}<div class="team-auction-info"><strong>${name}</strong>${meta?`<small>${meta}</small>`:""}${extra}</div></article>`;
+}
+
+function renderTeamAuctionSections(){
+  const liveEl=$("teamCurrentAuction");
+  const poolEl=$("teamAuctionPool");
+  const soldEl=$("teamSoldPlayers");
+  const unsoldEl=$("teamUnsoldPlayers");
+  if(!liveEl || !poolEl || !soldEl || !unsoldEl) return;
+
+  const players=Object.entries(teamDashboardPlayers || {});
+  const current=teamCurrentAuction;
+  if(current && current.state==="live"){
+    const bid=Number(current.currentBid||0);
+    const leader=current.highestTeamName ? escapeHTML(current.highestTeamName) : "No bids yet";
+    liveEl.innerHTML=`<div class="live-player-banner"><span class="live-pill">● LIVE NOW</span>${teamPlayerCard(current, `<small class="live-bid-line">Current bid: <strong>${bid.toLocaleString("en-IN")} points</strong></small><small>Highest team: <strong>${leader}</strong></small>`)}</div>`;
+  }else{
+    liveEl.innerHTML='<p class="note">No player is being auctioned right now. The next player will appear here when the admin starts the auction.</p>';
+  }
+
+  const pool=players.filter(([id,p])=>p && p.status==="auction_pool" && !(current && current.state==="live" && current.databaseId===id));
+  poolEl.innerHTML=pool.length ? pool.map(([id,p])=>teamPlayerCard(p,'<small class="status-label">Waiting for auction</small>')).join("") : '<p class="note">No upcoming players are currently in the auction pool.</p>';
+
+  const sold=players.filter(([id,p])=>p && p.status==="sold").sort((a,b)=>Number(b[1].soldAt||0)-Number(a[1].soldAt||0));
+  soldEl.innerHTML=sold.length ? sold.map(([id,p])=>{
+    const teamId=p.soldTo || "";
+    const team=(teamId && teamDashboardTeams[teamId]) || {};
+    const teamName=team.name || (teamId ? "Team record unavailable" : "Team not recorded");
+    const price=Number(p.soldFor||0).toLocaleString("en-IN");
+    return teamPlayerCard(p, `<small class="sold-detail">Sold for <strong>${price} points</strong></small><small>Sold to: <strong>${escapeHTML(teamName)}</strong></small>`);
+  }).join("") : '<p class="note">No players have been sold yet.</p>';
+
+  const unsold=players.filter(([id,p])=>p && p.status==="unsold");
+  unsoldEl.innerHTML=unsold.length ? unsold.map(([id,p])=>teamPlayerCard(p,'<small class="unsold-label">UNSOLD</small>')).join("") : '<p class="note">No unsold players at the moment.</p>';
+}
+
+/* =========================
    PLAYER MANAGEMENT
 ========================= */
 
 function renderPlayers(data){
 
   const el=$("playerList");
+
   if(!el)return;
 
   if(!data){
-    el.innerHTML="<p class='note'>No players registered yet.</p>";
+    el.innerHTML=
+      "<p class='note'>No players registered yet.</p>";
     return;
   }
 
   const players=Object.entries(data);
-  const unsoldPlayers=players.filter(([id,p])=>p.status==="unsold");
-  const regularPlayers=players.filter(([id,p])=>p.status!=="unsold");
 
-  const playerCard=([id,p],isUnsold=false)=>`
+  el.innerHTML=players.map(([id,p])=>`
+
     <div class="box" style="margin-bottom:12px">
+
       <div style="display:flex;gap:12px;align-items:center">
-        <img src="${p.photo||""}" alt="Player photo" style="width:70px;height:70px;object-fit:cover;border-radius:10px">
+
+        <img
+          src="${p.photo||""}"
+          alt="Player photo"
+          style="width:70px;height:70px;object-fit:cover;border-radius:10px"
+        >
+
         <div>
+
           <b>${p.name||"Unnamed player"}</b><br>
-          <small>${p.playerId||""} · ${p.city||""}</small><br>
-          <small>CricHeroes: ${p.cricheroes||"—"}</small><br>
-          <small>Status: <b>${isUnsold?"UNSOLD":(p.status||"pending")}</b></small>
+
+          <small>
+            ${p.playerId||""} · ${p.city||""}
+          </small><br>
+
+          <small>
+            CricHeroes: ${p.cricheroes||"—"}
+          </small><br>
+
+          <small>
+            Status:
+            <b>${p.status||"pending"}</b>
+          </small>
+
         </div>
+
       </div>
-      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-        ${!isUnsold && p.status==="pending" ? `
-          <button type="button" class="primary" data-player-action="approve" data-player-id="${id}">Approve</button>` : ""}
-        ${!isUnsold && (p.status==="pending"||p.status==="approved") ? `
-          <button type="button" class="secondary" data-player-action="reject" data-player-id="${id}">Reject</button>` : ""}
-        ${!isUnsold && p.status==="approved" ? `
-          <button type="button" class="primary" data-player-action="auction" data-player-id="${id}">Add to Auction</button>` : ""}
-        ${!isUnsold && p.status==="auction_pool" ? `
-          <button type="button" class="secondary" disabled>In Auction Pool</button>` : ""}
-        ${isUnsold ? `
-          <button type="button" class="primary" data-player-action="reauction" data-player-id="${id}">Return to Auction Pool</button>` : ""}
-        <button type="button" class="secondary" data-player-action="remove" data-player-id="${id}" style="background:#8b1e1e;color:#fff">Remove Player</button>
+
+
+      <div
+        style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"
+      >
+
+        ${
+          p.status==="pending"
+          ? `
+            <button
+              type="button"
+              class="primary"
+              data-player-action="approve"
+              data-player-id="${id}"
+            >
+              Approve
+            </button>
+          `
+          : ""
+        }
+
+
+        ${
+          p.status==="pending"||
+          p.status==="approved"
+          ? `
+            <button
+              type="button"
+              class="secondary"
+              data-player-action="reject"
+              data-player-id="${id}"
+            >
+              Reject
+            </button>
+          `
+          : ""
+        }
+
+
+        ${
+          p.status==="approved"
+          ? `
+            <button
+              type="button"
+              class="primary"
+              data-player-action="auction"
+              data-player-id="${id}"
+            >
+              Add to Auction
+            </button>
+          `
+          : ""
+        }
+
+
+        ${
+          p.status==="auction_pool"
+          ? `
+            <button
+              type="button"
+              class="secondary"
+              disabled
+            >
+              In Auction Pool
+            </button>
+          `
+          : ""
+        }
+
       </div>
+
     </div>
-  `;
 
-  const regularHTML=regularPlayers.length
-    ? regularPlayers.map(p=>playerCard(p,false)).join("")
-    : "<p class='note'>No players in this section.</p>";
-
-  const unsoldHTML=unsoldPlayers.length
-    ? unsoldPlayers.map(p=>playerCard(p,true)).join("")
-    : "<p class='note'>No unsold players yet. Players marked UNSOLD during the live auction will appear here.</p>";
-
-  el.innerHTML=`
-    <section>
-      <h3>Player Management</h3>
-      ${regularHTML}
-    </section>
-    <section style="margin-top:24px">
-      <h3>UNSOLD PLAYERS (${unsoldPlayers.length})</h3>
-      <p class="note">Return an unsold player to the auction pool when you want to auction them again.</p>
-      ${unsoldHTML}
-    </section>
-  `;
+  `).join("");
 }
+
 
 /* =========================
    AUCTION POOL
@@ -613,16 +727,6 @@ function renderRegisteredTeams(data){
 
         </div>
 
-        <button
-          type="button"
-          class="secondary"
-          data-team-action="remove"
-          data-team-id="${id}"
-          style="margin-top:12px;background:#8b1e1e;color:#fff"
-        >
-          Remove Team
-        </button>
-
       </div>
 
     `;
@@ -731,57 +835,6 @@ document.addEventListener(
     const action=b.dataset.playerAction;
 
     try{
-      if(action==="reauction"){
-        const playerSnap=await get(ref(db,"tournaments/main/players/"+id));
-        if(!playerSnap.exists()){
-          alert("Player not found.");
-          return;
-        }
-        const player=playerSnap.val();
-        if(player.status!=="unsold"){
-          alert("Only unsold players can be returned to the auction pool.");
-          return;
-        }
-        const currentSnap=await get(ref(db,"tournaments/main/auction/current"));
-        const current=currentSnap.exists()?currentSnap.val():null;
-        if(current && current.state==="live"){
-          alert("Finish the current live auction before returning another player to the pool.");
-          return;
-        }
-        if(!confirm("Return "+(player.name||"this player")+" to the auction pool?")) return;
-        const changes={};
-        changes["tournaments/main/players/"+id+"/status"]="auction_pool";
-        if(current && current.databaseId===id && current.state==="unsold"){
-          changes["tournaments/main/auction/current"]=null;
-        }
-        await update(ref(db),changes);
-        alert((player.name||"Player")+" has been returned to the auction pool.");
-        return;
-      }
-
-      if(action==="remove"){
-        const playerSnap=await get(ref(db,"tournaments/main/players/"+id));
-        if(!playerSnap.exists()) return;
-        const player=playerSnap.val();
-
-        const currentSnap=await get(ref(db,"tournaments/main/auction/current"));
-        const current=currentSnap.exists()?currentSnap.val():null;
-        if(current && current.state==="live" && current.databaseId===id){
-          alert("This player is currently live in the auction. Finish the auction first.");
-          return;
-        }
-        if(player.status==="sold"){
-          alert("This player has already been sold. To protect team and auction records, sold players cannot be removed here.");
-          return;
-        }
-        if(!confirm("Remove "+(player.name||"this player")+" permanently from AuctionXI?")) return;
-        await set(ref(db,"tournaments/main/players/"+id),null);
-        const auctionSnap=await get(ref(db,"tournaments/main/auction/current"));
-        if(auctionSnap.exists() && auctionSnap.val().databaseId===id){
-          await set(ref(db,"tournaments/main/auction/current"),null);
-        }
-        return;
-      }
 
       await update(
         ref(
@@ -811,61 +864,6 @@ document.addEventListener(
 
   }
 );
-
-/* =========================
-   REMOVE TEAM
-========================= */
-document.addEventListener("click", async e=>{
-  const button=e.target.closest("[data-team-action='remove']");
-  if(!button) return;
-
-  const teamId=button.dataset.teamId;
-  try{
-    const teamSnap=await get(ref(db,"tournaments/main/teams/"+teamId));
-    if(!teamSnap.exists()){
-      alert("This team no longer exists.");
-      return;
-    }
-    const team=teamSnap.val();
-    const bought=Number(team.bought||0);
-
-    if(bought>0){
-      alert("This team has already bought "+bought+" player(s). To protect auction records, remove is disabled for teams with purchased players.");
-      return;
-    }
-
-    const currentSnap=await get(ref(db,"tournaments/main/auction/current"));
-    if(currentSnap.exists()){
-      const current=currentSnap.val();
-      if(current.state==="live" && current.highestTeamId===teamId){
-        alert("This team currently has the highest bid. Finish or reset the live auction before removing it.");
-        return;
-      }
-    }
-
-    if(!confirm("Remove team '"+(team.name||"Unnamed Team")+"' from this tournament? The Firebase login account will not be deleted.")) return;
-
-    await set(ref(db,"tournaments/main/teams/"+teamId),null);
-
-    // Remove the team-role mapping so its old login cannot open a missing team dashboard.
-    const usersSnap=await get(ref(db,"users"));
-    if(usersSnap.exists()){
-      const users=usersSnap.val();
-      const updates={};
-      Object.entries(users).forEach(([uid,user])=>{
-        if(user && user.role==="team" && user.teamId===teamId){
-          updates["users/"+uid]=null;
-        }
-      });
-      if(Object.keys(updates).length) await update(ref(db),updates);
-    }
-
-    alert("Team removed from the tournament. Its Firebase login account still exists.");
-  }catch(err){
-    console.error(err);
-    alert("Could not remove team: "+err.message);
-  }
-});
 
 /* =========================
    LIVE AUCTION ACTIONS
@@ -1131,6 +1129,10 @@ document.addEventListener(
         updates[
           "tournaments/main/players/"+auction.databaseId+"/soldFor"
         ]=bid;
+
+        updates[
+          "tournaments/main/players/"+auction.databaseId+"/soldAt"
+        ]=Date.now();
 
         updates[
           "tournaments/main/teams/"+auction.highestTeamId+"/remaining"
@@ -1801,48 +1803,26 @@ onAuthStateChanged(
 
           $("maxBid").textContent=
             maxBid(r,b);
-
-          // Team squad and spending summary update live with the team record.
-          const squadEntries=Object.entries(t.players||{});
-          const squad=squadEntries.map(([key,player])=>({key,...(player||{})}));
-          const recordedSpend=squad.reduce((sum,player)=>sum+Number(player.soldFor||0),0);
-          const spent=recordedSpend || Math.max(0,Number(settings.totalPoints||0)-r);
-          const spentEl=$("totalSpent");
-          if(spentEl) spentEl.textContent=spent.toLocaleString("en-IN")+" pts";
-
-          const squadContainer=$("mySquad");
-          if(squadContainer){
-            if(!squad.length){
-              squadContainer.innerHTML='<p class="note">No players purchased yet. Your purchased players will appear here after they are sold to your team.</p>';
-            }else{
-              squadContainer.innerHTML=squad.map((player,index)=>{
-                const safe=value=>String(value??"").replace(/[&<>"']/g,char=>({
-                  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "'":"&#39;"
-                })[char]);
-                const photo=player.photo?`<img src="${safe(player.photo)}" alt="" class="squad-photo">`:'';
-                const city=player.city?`<span>${safe(player.city)}</span>`:'';
-                const previous=player.previous?`<span>Previous: ${safe(player.previous)}</span>`:'';
-                const cric=player.cricheroes?`<span>CricHeroes: ${safe(player.cricheroes)}</span>`:'';
-                return `
-                  <article class="squad-player">
-                    ${photo}
-                    <div class="squad-player-info">
-                      <strong>${safe(player.name||"Player")}</strong>
-                      <div class="squad-meta">${city}${cric}${previous}</div>
-                    </div>
-                    <div class="squad-price"><small>Sold for</small><strong>${Number(player.soldFor||0).toLocaleString("en-IN")} pts</strong></div>
-                  </article>
-                `;
-              }).join("");
-            }
-          }
         }
       );
+
+      /* Team auction screens: current live player, upcoming pool, sold and unsold lists */
+      onValue(ref(db,"tournaments/main/players"), snapshot=>{
+        teamDashboardPlayers = snapshot.exists() ? snapshot.val() : {};
+        renderTeamAuctionSections();
+      });
+
+      onValue(ref(db,"tournaments/main/auction/current"), snapshot=>{
+        teamCurrentAuction = snapshot.exists() ? snapshot.val() : null;
+        renderTeamAuctionSections();
+      });
 
       /* Other teams live information */
       onValue(
         ref(db,"tournaments/main/teams"),
         snapshot=>{
+          teamDashboardTeams = snapshot.exists() ? snapshot.val() : {};
+          renderTeamAuctionSections();
           const container=$("otherTeams");
           if(!container)return;
 

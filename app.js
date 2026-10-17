@@ -164,6 +164,66 @@ function teamPlayerCard(player, extra=""){
   return `<article class="team-auction-player">${photo}<div class="team-auction-info"><strong>${name}</strong>${meta?`<small>${meta}</small>`:""}${extra}</div></article>`;
 }
 
+/* =========================
+   MY SQUAD
+========================= */
+
+function renderMySquad(players){
+
+  const el = $("mySquad");
+
+  if(!el) {
+    console.warn("My Squad container not found: mySquad");
+    return;
+  }
+
+  const entries = Object.entries(players || {})
+    .filter(([id, player]) => player && player.status === "sold")
+    .sort((a, b) =>
+      Number(b[1].soldFor || 0) - Number(a[1].soldFor || 0)
+    );
+
+  if(!entries.length){
+    el.innerHTML =
+      '<p class="note">You have not purchased any players yet.</p>';
+    return;
+  }
+
+  el.innerHTML = entries.map(([id, player]) => {
+
+    const name = escapeHTML(player.name || "Player");
+    const photo = player.photo
+      ? `<img class="squad-photo" src="${escapeHTML(player.photo)}" alt="${name}">`
+      : `<div class="squad-photo team-photo-placeholder">🏏</div>`;
+
+    const playerId = escapeHTML(player.playerId || "");
+    const city = escapeHTML(player.city || "");
+    const previous = escapeHTML(player.previous || "");
+    const cricheroes = escapeHTML(player.cricheroes || "");
+    const price = Number(player.soldFor || 0).toLocaleString("en-IN");
+
+    return `
+      <article class="squad-player">
+        ${photo}
+
+        <div class="squad-player-info">
+          <strong>${name}</strong>
+
+          ${playerId ? `<small>${playerId}</small>` : ""}
+          ${city ? `<small>City: ${city}</small>` : ""}
+          ${cricheroes ? `<small>CricHeroes: ${cricheroes}</small>` : ""}
+          ${previous ? `<small>Previous team: ${previous}</small>` : ""}
+
+          <div class="squad-price">
+            Bought for ${price} points
+          </div>
+        </div>
+      </article>
+    `;
+
+  }).join("");
+}
+
 function renderTeamAuctionSections(){
   const liveEl=$("teamCurrentAuction");
   const poolEl=$("teamAuctionPool");
@@ -1790,6 +1850,8 @@ onAuthStateChanged(
           const b=+(t.bought||0);
           const r=+(t.remaining??settings.totalPoints);
 
+          renderMySquad(t.players || {});
+          
           $("teamNameOut").textContent=
             t.name||"Team";
 

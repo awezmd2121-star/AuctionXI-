@@ -1801,6 +1801,41 @@ onAuthStateChanged(
 
           $("maxBid").textContent=
             maxBid(r,b);
+
+          // Team squad and spending summary update live with the team record.
+          const squadEntries=Object.entries(t.players||{});
+          const squad=squadEntries.map(([key,player])=>({key,...(player||{})}));
+          const recordedSpend=squad.reduce((sum,player)=>sum+Number(player.soldFor||0),0);
+          const spent=recordedSpend || Math.max(0,Number(settings.totalPoints||0)-r);
+          const spentEl=$("totalSpent");
+          if(spentEl) spentEl.textContent=spent.toLocaleString("en-IN")+" pts";
+
+          const squadContainer=$("mySquad");
+          if(squadContainer){
+            if(!squad.length){
+              squadContainer.innerHTML='<p class="note">No players purchased yet. Your purchased players will appear here after they are sold to your team.</p>';
+            }else{
+              squadContainer.innerHTML=squad.map((player,index)=>{
+                const safe=value=>String(value??"").replace(/[&<>"']/g,char=>({
+                  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "'":"&#39;"
+                })[char]);
+                const photo=player.photo?`<img src="${safe(player.photo)}" alt="" class="squad-photo">`:'';
+                const city=player.city?`<span>${safe(player.city)}</span>`:'';
+                const previous=player.previous?`<span>Previous: ${safe(player.previous)}</span>`:'';
+                const cric=player.cricheroes?`<span>CricHeroes: ${safe(player.cricheroes)}</span>`:'';
+                return `
+                  <article class="squad-player">
+                    ${photo}
+                    <div class="squad-player-info">
+                      <strong>${safe(player.name||"Player")}</strong>
+                      <div class="squad-meta">${city}${cric}${previous}</div>
+                    </div>
+                    <div class="squad-price"><small>Sold for</small><strong>${Number(player.soldFor||0).toLocaleString("en-IN")} pts</strong></div>
+                  </article>
+                `;
+              }).join("");
+            }
+          }
         }
       );
 

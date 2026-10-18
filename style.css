@@ -472,3 +472,29 @@ button{
     height: 46px !important;
   }
 }
+
+/* AUCTIONXI — FORCE SMALLER LOGO */
+.top > div::before {
+  width: 65px !important;
+  height: 28px !important;
+  background-size: contain !important;
+}
+
+.login h1::before {
+  width: 130px !important;
+  height: 68px !important;
+  margin: 0 auto 5px !important;
+  background-size: contain !important;
+}
+
+@media (max-width: 700px) {
+  .top > div::before {
+    width: 60px !important;
+    height: 25px !important;
+  }
+
+  .login h1::before {
+    width: 120px !important;
+    height: 62px !important;
+  }
+}

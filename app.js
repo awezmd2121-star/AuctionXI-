@@ -376,6 +376,16 @@ function renderPlayers(data){
           : ""
         }
 
+        <button
+          type="button"
+          class="secondary"
+          data-player-action="remove"
+          data-player-id="${id}"
+          style="border-color:#ef4444;color:#fecaca"
+        >
+          Remove Player
+        </button>
+
       </div>
 
     </div>
@@ -787,6 +797,18 @@ function renderRegisteredTeams(data){
 
         </div>
 
+        <div style="margin-top:12px;display:flex;justify-content:flex-end">
+          <button
+            type="button"
+            class="secondary"
+            data-team-action="remove"
+            data-team-id="${id}"
+            style="border-color:#ef4444;color:#fecaca"
+          >
+            Remove Team
+          </button>
+        </div>
+
       </div>
 
     `;
@@ -894,6 +916,18 @@ document.addEventListener(
     const id=b.dataset.playerId;
     const action=b.dataset.playerAction;
 
+    if(action==="remove"){
+      const confirmed=confirm("Remove this player permanently from AuctionXI? This deletes the player record and cannot be undone.");
+      if(!confirmed)return;
+      try{
+        await set(ref(db,"tournaments/main/players/"+id),null);
+      }catch(err){
+        console.error(err);
+        alert("Could not remove player: "+err.message);
+      }
+      return;
+    }
+
     try{
 
       await update(
@@ -924,6 +958,27 @@ document.addEventListener(
 
   }
 );
+
+/* =========================
+   REMOVE TEAM ACTION
+========================= */
+
+document.addEventListener("click", async e=>{
+  const b=e.target.closest("[data-team-action=\"remove\"]");
+  if(!b)return;
+  const id=b.dataset.teamId;
+  if(!id)return;
+  const confirmed=confirm("Remove this team permanently from AuctionXI? The team record and its squad will be deleted. This does not delete a Firebase Authentication login or its users/{uid} role record.");
+  if(!confirmed)return;
+  b.disabled=true;
+  try{
+    await set(ref(db,"tournaments/main/teams/"+id),null);
+  }catch(err){
+    console.error(err);
+    alert("Could not remove team: "+err.message);
+    b.disabled=false;
+  }
+});
 
 /* =========================
    LIVE AUCTION ACTIONS

@@ -1,449 +1,434 @@
-:root{
-  --bg:#06120b;
-  --card:rgba(8,22,14,.78);
-  --card2:rgba(7,18,12,.72);
-  --text:#f4fff7;
-  --muted:#a8bcae;
-  --line:rgba(92,151,108,.28);
-  --line-soft:rgba(92,151,108,.20);
-  --accent:#22c55e;
-  --accent2:#4ade80;
-  --accent-dark:#15803d;
-  --good:#34d399;
+/* AuctionXI — corrected premium mobile-first stylesheet */
+
+:root {
+  --bg: #06120b;
+  --card: rgba(10, 27, 17, 0.94);
+  --card2: rgba(8, 22, 14, 0.94);
+  --text: #f4fff7;
+  --muted: #a8bcae;
+  --line: rgba(134, 239, 172, 0.17);
+  --line-soft: rgba(134, 239, 172, 0.11);
+  --accent: #22c55e;
+  --accent2: #86efac;
+  --accent-dark: #15803d;
+  --good: #34d399;
+  --gold: #f4cf75;
 }
 
-*{box-sizing:border-box}
+* { box-sizing: border-box; }
 
-html{
-  scroll-behavior:smooth;
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
-body{
-  margin:0;
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  line-height: 1.5;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
   background:
-    linear-gradient(rgba(3,12,7,.78),rgba(3,12,7,.88)),
+    linear-gradient(rgba(3, 12, 7, 0.82), rgba(3, 12, 7, 0.91)),
     url("https://images.unsplash.com/photo-1671209151455-86980f5bf293?auto=format&fit=crop&fm=jpg&q=75&w=2000")
-    center/cover fixed no-repeat;
-  color:var(--text);
-  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  min-height:100vh;
-  line-height:1.45;
+    center / cover fixed no-repeat;
 }
 
-.top{
-  min-height:68px;
-  padding:12px max(16px,calc((100% - 1080px)/2));
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:14px;
-  border-bottom:1px solid rgba(120,200,140,.18);
-  background:rgba(3,12,7,.82);
-  position:sticky;
-  top:0;
-  z-index:10;
-  backdrop-filter:blur(14px);
-}
-
-.top b{
-  font-size:21px;
-  letter-spacing:1.6px;
-  line-height:1;
-}
-
-.top b span{
-  color:var(--accent2);
-}
-
-.top small{
-  display:block;
-  color:var(--muted);
-  font-size:9px;
-  text-transform:uppercase;
-  letter-spacing:1px;
-  margin-top:3px;
-}
-
-main{
-  width:min(1080px,calc(100% - 24px));
-  margin:20px auto 50px;
-}
-
-.card{
-  background:linear-gradient(145deg,rgba(13,35,22,.86),rgba(5,17,10,.82));
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:16px;
-  margin-bottom:12px;
-  box-shadow:0 12px 34px rgba(0,0,0,.34);
-  backdrop-filter:blur(10px);
-}
-
-.hero{
-  padding:20px;
-  margin-bottom:12px;
-  background:linear-gradient(135deg,rgba(20,63,35,.88),rgba(6,25,14,.84));
-}
-
-.hero small{
-  color:var(--accent2);
-  font-weight:800;
-  letter-spacing:1.4px;
-  font-size:10px;
-}
-
-h1{
-  margin:6px 0 5px;
-  font-size:27px;
-  line-height:1.15;
-}
-
-h2{
-  font-size:17px;
-  line-height:1.2;
-  margin:0 0 8px;
-}
-
-h3{
-  font-size:14px;
-  line-height:1.25;
-  margin:0 0 10px;
-}
-
-p{margin:7px 0}
-
-p,.note{
-  color:var(--muted);
-}
-
-label{
-  display:block;
-  font-size:11px;
-  font-weight:750;
-  margin:10px 0 5px;
-  color:#d3e6d8;
-}
-
-input{
-  width:100%;
-  min-height:42px;
-  padding:10px 12px;
-  border-radius:10px;
-  border:1px solid rgba(92,151,108,.30);
-  background:rgba(3,13,8,.78);
-  color:var(--text);
-  outline:0;
-  margin-bottom:5px;
-  font:inherit;
-}
-
-input::placeholder{
-  color:#718477;
-}
-
-input:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 0 2px rgba(34,197,94,.16);
-}
-
-input[type="file"]{
-  padding:8px;
-  font-size:12px;
-}
-
-.grid{
-  display:grid;
-  gap:12px;
-}
-
-.two{
-  grid-template-columns:repeat(2,minmax(0,1fr));
-}
-
-.three{
-  grid-template-columns:repeat(3,minmax(0,1fr));
-}
-
-.primary,
-.ghost,
-.secondary{
-  min-height:42px;
-  padding:10px 15px;
-  border-radius:10px;
-  font:inherit;
-  font-weight:800;
-  cursor:pointer;
-  transition:transform .12s ease,filter .12s ease,box-shadow .12s ease;
-}
-
-.primary{
-  background:linear-gradient(135deg,#22c55e,#15803d);
-  color:#fff;
-  border:1px solid rgba(134,239,172,.24);
-  box-shadow:0 6px 18px rgba(34,197,94,.22);
-}
-
-.secondary{
-  background:rgba(20,65,35,.82);
-  color:#e7f8eb;
-  border:1px solid rgba(92,151,108,.38);
-}
-
-.ghost{
-  background:rgba(7,21,12,.72);
-  color:#d5e8da;
-  border:1px solid var(--line);
-}
-
-.primary:hover,
-.secondary:hover,
-.ghost:hover{
-  filter:brightness(1.08);
-  box-shadow:0 7px 20px rgba(34,197,94,.15);
-}
-
-.primary:active,
-.secondary:active,
-.ghost:active{
-  transform:scale(.98);
-}
-
-.hidden{
-  display:none!important;
-}
-
-.box{
-  padding:11px 12px;
-  background:rgba(3,13,8,.70);
-  border:1px solid var(--line-soft);
-  border-radius:10px;
-  font-weight:800;
-}
-
-.stat{
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  gap:5px;
-  min-height:88px;
-}
-
-.stat small{
-  color:var(--muted);
-  font-size:11px;
-}
-
-.stat b{
-  font-size:24px;
-  line-height:1.1;
-}
-
-.big{
-  font-size:32px;
-  font-weight:900;
-  color:var(--accent2);
-}
-
-.note{
-  font-size:11px;
-  line-height:1.4;
-}
-
-#saveMsg,
-#teamMsg,
-#playerMsg,
-#loginMsg{
-  min-height:16px;
-  font-size:11px;
-}
-
-#teams{
-  margin-top:12px;
-}
-
-#teams>div{
-  padding:11px;
-  border:1px solid var(--line-soft);
-  background:rgba(3,13,8,.70);
-  border-radius:10px;
-  margin-top:7px;
-}
-
-#registeredTeams{
-  display:grid;
-  gap:9px;
-}
-
-#registeredTeams .box{
-  margin:0!important;
-  background:linear-gradient(145deg,rgba(12,40,22,.78),rgba(4,17,10,.72));
-}
-
-#registeredTeams .grid{
-  gap:10px;
-}
-
-#registeredTeams small{
-  color:var(--muted);
-  font-size:10px;
-}
-
-#registeredTeams b{
-  font-size:13px;
-}
-
-.login{
-  max-width:430px;
-  margin:50px auto;
-}
-
-button{
-  -webkit-tap-highlight-color:transparent;
-}
-
-@media(max-width:700px){
-  body{
-    background:
-      linear-gradient(rgba(3,12,7,.80),rgba(3,12,7,.90)),
-      url("https://images.unsplash.com/photo-1671209151455-86980f5bf293?auto=format&fit=crop&fm=jpg&q=75&w=1200")
-      center/cover fixed no-repeat;
-  }
-
-  main{
-    width:calc(100% - 16px);
-    margin-top:12px;
-  }
-
-  .top{
-    min-height:60px;
-    padding:10px 12px;
-  }
-
-  .top b{
-    font-size:19px;
-  }
-
-  .card{
-    padding:13px;
-    border-radius:13px;
-    margin-bottom:9px;
-  }
-
-  .hero{
-    padding:16px;
-  }
-
-  h1{
-    font-size:23px;
-  }
-
-  h2{
-    font-size:16px;
-  }
-
-  .two,
-  .three{
-    grid-template-columns:1fr;
-  }
-
-  .stat{
-    min-height:78px;
-  }
-
-  .stat b{
-    font-size:22px;
-  }
-
-  .login{
-    margin-top:25px;
-  }
-}
-
-@media(prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
-
-  .primary,
-  .secondary,
-  .ghost{
-    transition:none;
-  }
-}
-
-/* Team dashboard auction sections */
-.team-auction-section h2{display:flex;align-items:center;gap:8px}
-.team-auction-player{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft);min-width:0}
-.team-auction-player:last-child{border-bottom:0}
-.team-auction-photo{width:68px;height:68px;flex:0 0 68px;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.2)}
-.team-photo-placeholder{display:grid;place-items:center;font-size:27px}
-.team-auction-info{display:flex;flex-direction:column;gap:4px;min-width:0;overflow-wrap:anywhere}
-.team-auction-info strong{color:var(--text)}
-.team-auction-info small{font-size:12px;color:var(--muted)}
-.live-player-banner{border:1px solid rgba(248,113,113,.42);border-radius:13px;padding:12px;background:rgba(127,29,29,.12)}
-.live-pill{display:inline-block;border-radius:999px;padding:4px 9px;margin-bottom:6px;background:rgba(220,38,38,.2);color:#fca5a5;font-size:10px;font-weight:900;letter-spacing:.8px}
-.live-bid-line{margin-top:5px}
-.live-bid-line strong,.sold-detail strong{color:var(--accent2)}
-.status-label{color:var(--accent2)!important}
-.unsold-label{color:#fbbf24!important;font-weight:850}
-@media(max-width:600px){
-  .team-auction-player{align-items:flex-start;gap:10px}
-  .team-auction-photo{width:58px;height:58px;flex-basis:58px}
-  .team-auction-info small{font-size:11px}
-}
-
-/* MY SQUAD — LARGER PLAYER PHOTOS */
-.squad-player {
+.top {
+  min-height: 66px;
+  padding: 12px max(16px, calc((100% - 1080px) / 2));
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 0;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid rgba(134, 239, 172, 0.20);
+  background: rgba(4, 16, 9, 0.94);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 5px 22px rgba(0, 0, 0, 0.18);
 }
 
-.squad-photo {
-  width: 50px !important;
-  height: 50px !important;
-  min-width: 50px;
-  flex: 0 0 50px !important;
-  object-fit: cover;
-  border-radius: 8px;
+.top b {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  line-height: 1;
 }
 
-.squad-player-info {
+.top b span { color: var(--gold); }
+
+.top small {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 4px;
+}
+
+main {
+  width: min(1080px, calc(100% - 28px));
+  margin: 22px auto 48px;
+}
+
+.card {
   min-width: 0;
+  padding: 18px;
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(13, 34, 21, 0.97), rgba(5, 17, 10, 0.96));
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 24px 20px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(134, 239, 172, 0.23);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.16), transparent 48%),
+    linear-gradient(135deg, rgba(18, 58, 32, 0.98), rgba(5, 23, 12, 0.98));
+}
+
+.hero small {
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.8px;
+}
+
+h1 {
+  margin: 8px 0;
+  font-size: clamp(24px, 5vw, 32px);
+  font-weight: 900;
+  letter-spacing: -0.7px;
+  line-height: 1.15;
   overflow-wrap: anywhere;
 }
 
-.squad-player-info img {
-  width: 50px !important;
-  height: 50px !important;
+h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 850;
+  letter-spacing: -0.2px;
+  line-height: 1.25;
 }
 
-@media (max-width: 600px) {
-  .squad-photo {
+h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+p { margin: 7px 0; color: var(--muted); }
+
+.note {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+label {
+  display: block;
+  margin: 13px 0 6px;
+  color: #d9e9dd;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+input {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 12px 13px;
+  margin-bottom: 5px;
+  border: 1px solid rgba(134, 239, 172, 0.19);
+  border-radius: 12px;
+  outline: 0;
+  background: rgba(2, 12, 6, 0.88);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+input::placeholder { color: #7e9284; }
+
+input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12);
+}
+
+input[type="file"] { padding: 8px; font-size: 12px; }
+
+.grid { display: grid; gap: 12px; }
+.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.primary, .ghost, .secondary {
+  min-height: 46px;
+  max-width: 100%;
+  padding: 11px 16px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 850;
+  letter-spacing: 0.1px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease, filter 0.15s ease, border-color 0.15s ease;
+}
+
+.primary {
+  border: 1px solid rgba(134, 239, 172, 0.28);
+  background: linear-gradient(135deg, #22c55e, #15803d);
+  color: #f6fff8;
+  box-shadow: 0 5px 15px rgba(34, 197, 94, 0.15);
+}
+
+.secondary {
+  border: 1px solid rgba(134, 239, 172, 0.20);
+  background: linear-gradient(135deg, rgba(21, 69, 37, 0.95), rgba(10, 35, 18, 0.95));
+  color: #e8f8ec;
+}
+
+.ghost {
+  border: 1px solid var(--line);
+  background: rgba(7, 20, 12, 0.92);
+  color: #d9e9dd;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover, .secondary:hover, .ghost:hover { filter: brightness(1.12); }
+}
+
+.primary:active, .secondary:active, .ghost:active { transform: scale(0.98); }
+button { -webkit-tap-highlight-color: transparent; }
+.hidden { display: none !important; }
+
+.box {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: 13px;
+  background: rgba(3, 14, 8, 0.82);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.stat {
+  display: flex;
+  min-width: 0;
+  min-height: 96px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  padding: 15px;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(13, 36, 22, 0.92), rgba(4, 16, 9, 0.94));
+}
+
+.stat small { color: var(--muted); font-size: 11px; line-height: 1.35; }
+
+.stat b {
+  font-size: 25px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.big { color: var(--accent2); font-size: 32px; font-weight: 950; letter-spacing: -0.8px; }
+
+#saveMsg, #teamMsg, #playerMsg, #loginMsg { min-height: 18px; font-size: 12px; }
+
+#teams { margin-top: 14px; }
+
+#teams > div {
+  margin-top: 9px;
+  padding: 13px;
+  border: 1px solid var(--line-soft);
+  border-radius: 13px;
+  background: rgba(3, 14, 8, 0.84);
+  overflow-wrap: anywhere;
+}
+
+#registeredTeams { display: grid; gap: 11px; }
+
+#registeredTeams .box {
+  margin: 0 !important;
+  padding: 15px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(13, 40, 22, 0.94), rgba(4, 17, 10, 0.94));
+}
+
+#registeredTeams .grid { gap: 10px; }
+#registeredTeams small { color: var(--muted); font-size: 11px; }
+#registeredTeams b { font-size: 14px; overflow-wrap: anywhere; }
+.login { width: min(430px, 100%); margin: 45px auto; }
+
+/* Team dashboard auction sections */
+.team-auction-section { min-width: 0; }
+
+.team-auction-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.team-auction-player {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.team-auction-player:last-child { border-bottom: 0; }
+
+.team-auction-photo {
+  width: 70px;
+  height: 70px;
+  flex: 0 0 70px;
+  object-fit: cover;
+  border: 1px solid rgba(134, 239, 172, 0.22);
+  border-radius: 13px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.team-photo-placeholder { display: grid; place-items: center; font-size: 27px; }
+
+.team-auction-info {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+  overflow-wrap: anywhere;
+}
+
+.team-auction-info strong { color: var(--text); font-size: 14px; font-weight: 850; }
+.team-auction-info small { color: var(--muted); font-size: 12px; }
+
+.live-player-banner {
+  padding: 15px;
+  border: 1px solid rgba(248, 113, 113, 0.34);
+  border-radius: 15px;
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.18), rgba(50, 12, 12, 0.24));
+}
+
+.live-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  border-radius: 999px;
+  background: rgba(220, 38, 38, 0.17);
+  color: #fca5a5;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.live-bid-line { margin-top: 7px; }
+.live-bid-line strong, .sold-detail strong { color: var(--gold); }
+.status-label { color: var(--accent2) !important; font-weight: 850; }
+.unsold-label { color: #fbbf24 !important; font-weight: 850; }
+
+/* My squad */
+.squad-player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 11px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: 13px;
+  background: rgba(3, 14, 8, 0.64);
+}
+
+.squad-photo, .squad-player-info img {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px;
+  flex: 0 0 52px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+}
+
+.squad-player-info { min-width: 0; overflow-wrap: anywhere; }
+.squad-meta { color: var(--muted); font-size: 12px; }
+.squad-price { flex-shrink: 0; margin-left: auto; text-align: right; }
+.squad-price strong { color: var(--gold); font-size: 13px; }
+
+/* Tablet and phone layout */
+@media (max-width: 700px) {
+  body {
+    background:
+      linear-gradient(rgba(3, 12, 7, 0.84), rgba(3, 12, 7, 0.92)),
+      url("https://images.unsplash.com/photo-1671209151455-86980f5bf293?auto=format&fit=crop&fm=jpg&q=75&w=1200")
+      center / cover fixed no-repeat;
+  }
+
+  main { width: calc(100% - 20px); margin-top: 13px; margin-bottom: 30px; }
+  .top { min-height: 60px; padding: 10px 13px; gap: 10px; }
+  .top b { font-size: 19px; }
+  .card { padding: 15px; margin-bottom: 11px; border-radius: 15px; }
+  .hero { padding: 19px 16px; }
+  h1 { font-size: 25px; }
+  h2 { font-size: 17px; }
+  .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat { min-height: 86px; padding: 12px; }
+  .stat b { font-size: 22px; }
+  .login { margin-top: 26px; }
+  .team-auction-player { align-items: flex-start; gap: 11px; }
+  .team-auction-photo { width: 60px; height: 60px; flex-basis: 60px; }
+  .team-auction-info small { font-size: 11px; }
+}
+
+/* Small phones */
+@media (max-width: 380px) {
+  main { width: calc(100% - 14px); }
+  .card { padding: 12px; }
+  .hero { padding: 16px 13px; }
+  h1 { font-size: 22px; }
+  .two, .three { grid-template-columns: 1fr; }
+
+  #team .grid.three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #team .grid.three .stat:nth-child(2) { grid-column: span 2; }
+
+  .squad-player { gap: 9px; padding: 9px; }
+  .squad-photo, .squad-player-info img {
     width: 46px !important;
     height: 46px !important;
     min-width: 46px;
-    flex-basis: 46px !important;
+    flex-basis: 46px;
   }
-
-  .squad-player-info img {
-    width: 46px !important;
-    height: 46px !important;
-  }
+  .squad-meta { font-size: 11px; }
+  .squad-price strong { font-size: 12px; }
 }
 
-    width:min(220px, 70vw);
-    height:92px;
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
-  #team .grid.three{grid-template-columns:repeat(2,minmax(0,1fr));}
-  #team .grid.three .stat:nth-child(2){grid-column:span 2;}
-  .squad-player{gap:8px;padding:9px;}
-  .squad-photo{width:52px;height:52px;flex-basis:52px;}
-  .squad-meta{font-size:11px;}
-  .squad-price strong{font-size:12px;}
-}
-@media(max-width:360px){
-  #team .grid.three{grid-template-columns:1fr;}
-  #team .grid.three .stat:nth-child(2){grid-column:auto;}
-  .squad-player{flex-wrap:wrap;}
-  .squad-price{margin-left:60px;text-align:left;}
 }

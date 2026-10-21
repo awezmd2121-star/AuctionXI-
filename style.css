@@ -459,3 +459,26 @@ button { -webkit-tap-highlight-color: transparent; }
     font-size: 7px;
   }
 }
+
+/* Fix AuctionXI logo size on mobile */
+.top b {
+  font-size: 15px !important;
+  letter-spacing: 1px;
+}
+
+.top small {
+  font-size: 8px !important;
+}
+
+.top {
+  min-height: 50px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.top img {
+  width: 38px !important;
+  height: 38px !important;
+  max-width: 38px !important;
+  object-fit: contain;
+}

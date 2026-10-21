@@ -482,3 +482,20 @@ button { -webkit-tap-highlight-color: transparent; }
   max-width: 38px !important;
   object-fit: contain;
 }
+
+/* AuctionXI logo size adjustment */
+.top b {
+  font-size: 19px !important;
+  letter-spacing: 1.2px;
+}
+
+.top small {
+  font-size: 9px !important;
+}
+
+.top img {
+  width: 44px !important;
+  height: 44px !important;
+  max-width: 44px !important;
+  object-fit: contain;
+}
